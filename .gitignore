@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.token
+*.cert
+credentials.json
+secrets.json
+
+# Databases & User Data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Uploaded Media / Screenshots
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs & Temporary Files
+*.log
+scratch/

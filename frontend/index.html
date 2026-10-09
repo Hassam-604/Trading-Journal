@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal v1.1</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon">HT.J</div>
+        <div class="brand-title">TRADING JOURNAL</div>
+        <div class="brand-badge">v1.1</div>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close menu">✕</button>
+      </div>
+      
+      <div class="sidebar-nav">
+        <div class="nav-section-title">Main</div>
+        <a href="#dashboard" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#journal" class="nav-item" data-page="journal">
+          <span class="nav-icon">📒</span> Trade Journal
+        </a>
+
+        <a href="#add-trade" class="nav-item" data-page="add-trade" onclick="app.openAddTradeModal(); return false;">
+          <span class="nav-icon text-gold">➕</span> Add Trade
+        </a>
+        
+        <div class="nav-section-title">Research</div>
+        <a href="#missed" class="nav-item" data-page="missed">
+          <span class="nav-icon">🎯</span> Missed Trades
+        </a>
+        <a href="#levels" class="nav-item" data-page="levels">
+          <span class="nav-icon">🔁</span> Level Tests
+        </a>
+        
+        <div class="nav-section-title">Analytics</div>
+        <a href="#performance" class="nav-item" data-page="performance">
+          <span class="nav-icon">📈</span> Performance
+        </a>
+        <a href="#analytics" class="nav-item" data-page="analytics">
+          <span class="nav-icon">🔍</span> Analytics
+        </a>
+
+        <div class="nav-section-title">Visual Review</div>
+        <a href="#gallery" class="nav-item" data-page="gallery">
+          <span class="nav-icon">📸</span> Trade Gallery
+        </a>
+        <a href="#setup-analysis" class="nav-item" data-page="setup-analysis">
+          <span class="nav-icon">🧩</span> Setup Analysis
+        </a>
+        
+        <div class="nav-section-title">System</div>
+        <a href="#settings" class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙️</span> Settings
+        </a>
+      </div>
+      
+      <div class="sidebar-footer">
+        <div class="quick-stats-box">
+          <div class="quick-stats-label">Win Rate</div>
+          <div class="quick-stats-val text-win" id="sidebar-win-rate">--%</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+      <!-- Topbar -->
+      <header class="top-bar">
+        <div class="page-heading-box">
+          <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
+          <h2 class="page-title" id="page-title">Dashboard</h2>
+        </div>
+
+        <div class="top-actions">
+          <div class="quick-stats-label" style="display:inline-block; margin-right: 5px;">Balance:</div>
+          <div class="quick-stats-val text-gold balance-clickable" id="topbar-balance" style="display:inline-block; cursor:pointer;" onclick="app.openEditBalanceModal()" title="Click to edit account balance">$--.--</div>
+          <button class="topbar-edit-btn" onclick="app.openEditBalanceModal()" title="Edit Account Balance" aria-label="Edit Account Balance">✏️</button>
+          <button class="btn btn-primary" onclick="app.openAddTradeModal()">Add Trade (N)</button>
+        </div>
+      </header>
+
+      <!-- Dynamic Page Content -->
+      <div class="content-body" id="content-body">
+        <!-- Content injected by JS -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Modals -->
+  <!-- Add/Edit Trade Modal -->
+  <div class="modal-overlay" id="trade-modal-overlay">
+    <div class="modal-card" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="trade-modal-title">Add Trade</h3>
+        <button class="icon-btn" onclick="app.closeTradeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="trade-modal-body">
+        <!-- Form injected here by form.js -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeTradeModal()">Cancel</button>
+        <button class="btn btn-gold" id="trade-modal-save" onclick="formManager.saveTrade()">Save Trade</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trade Details Modal -->
+  <div class="modal-overlay" id="trade-details-overlay">
+    <div class="modal-card" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="trade-details-title">Trade Details</h3>
+        <button class="icon-btn" onclick="app.closeTradeDetails()">✕</button>
+      </div>
+      <div class="modal-body" id="trade-details-body">
+        <!-- Details injected here by journal.js -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeTradeDetails()">Close</button>
+        <button class="btn btn-primary" id="trade-details-edit" onclick="journal.editTradeFromDetails()">Edit</button>
+        <button class="btn btn-danger" id="trade-details-delete" onclick="journal.deleteTradeFromDetails()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Account Balance Modal -->
+  <div class="modal-overlay" id="balance-modal-overlay">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title">💰 Edit Account Balance</h3>
+        <button class="icon-btn" onclick="app.closeEditBalanceModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <p class="text-muted" style="margin-bottom: 16px; font-size: 13.5px; line-height: 1.5;">
+          Set your base/starting account balance. Your <strong>Current Balance</strong> will automatically compute from your starting balance plus your total net journal P&amp;L:
+          <br>
+          <span style="display:inline-block; margin-top:8px; font-weight:600; color:var(--text-main); background:rgba(255,255,255,0.04); padding:6px 10px; border-radius:6px; border:1px solid var(--border-subtle);">
+            Starting Balance + Net P&amp;L = Current Balance
+          </span>
+        </p>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="input-starting-balance" style="display:block; margin-bottom: 8px; font-weight: 500;">Starting / Base Balance ($)</label>
+          <div style="position: relative;">
+            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 600; color: var(--color-gold); font-size: 16px;">$</span>
+            <input type="number" step="0.01" min="0" id="input-starting-balance" class="form-control" style="padding-left: 32px; font-size: 16px; font-weight: 600;" placeholder="10000.00" oninput="app.onStartingBalanceInput(this.value)">
+          </div>
+        </div>
+
+        <div style="background: var(--bg-surface-alt, rgba(255,255,255,0.03)); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+            <span class="text-muted">Total Realized Net P&amp;L:</span>
+            <span id="balance-modal-net-pnl" style="font-weight: 600;">$0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+            <span>Projected Current Balance:</span>
+            <span id="balance-modal-projected" class="text-gold">$0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeEditBalanceModal()">Cancel</button>
+        <button class="btn btn-gold" id="btn-save-balance" onclick="app.saveAccountBalance()">Update Balance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/form.js"></script>
+  <script src="js/journal.js"></script>
+  <script src="js/missed.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/performance.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/lightbox.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/setup_analysis.js"></script>
+
+
+  
+  <script>
+    // Initialize App
+    document.addEventListener("DOMContentLoaded", () => {
+      app.init();
+    });
+  </script>
+
+</body>
+</html>

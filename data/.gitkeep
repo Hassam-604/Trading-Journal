@@ -1,0 +1,5 @@
+# Ignore database files in this directory except this file
+*.db
+*.sqlite
+*.sqlite3
+!.gitkeep
