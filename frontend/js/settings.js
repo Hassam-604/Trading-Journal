@@ -8,30 +8,34 @@ const settings = (() => {
   async function render(container) {
     container.innerHTML = `
       <div class="settings-page">
-        <div class="page-header" style="margin-bottom: 24px;">
-          <h2 class="page-title">Settings & Account Management</h2>
-          <p class="text-muted" style="margin-top: 4px;">Configure your starting account balance, risk defaults, tags, and data backups.</p>
-        </div>
+        <header class="settings-heading">
+          <div>
+            <p class="dashboard-eyebrow">PREFERENCES</p>
+            <h1>Settings</h1>
+            <p class="dashboard-intro-copy">Manage account defaults, journal tags, and data backups.</p>
+          </div>
+        </header>
         
         <div class="settings-grid">
           
           <!-- 1. Account & Balance Configuration -->
-          <div class="settings-panel">
+          <section class="settings-panel">
             <div class="panel-header">
-              <h4 style="display:flex; align-items:center; gap:8px;">
-                <span>💰</span> Account & Balance Settings
-              </h4>
+              <div>
+                <h2>Account &amp; balance</h2>
+                <p>Defaults used when you record trades.</p>
+              </div>
             </div>
             <div class="panel-body">
               <form id="account-settings-form">
-                <div class="form-grid-2" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div class="form-grid-2 settings-form-grid">
                   <div class="form-group">
                     <label for="set-starting-balance">Starting / Base Balance</label>
-                    <div style="position: relative;">
-                      <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 600; color: var(--color-gold);">$</span>
-                      <input type="number" step="0.01" min="0" id="set-starting-balance" class="form-control" style="padding-left: 28px; font-weight: 600;" required>
+                    <div class="settings-currency-input">
+                      <span aria-hidden="true">$</span>
+                      <input type="number" step="0.01" min="0" id="set-starting-balance" class="form-control" required>
                     </div>
-                    <small class="text-muted" style="display:block; margin-top:4px;">Your initial or funded account capital.</small>
+                    <small class="text-muted settings-help-copy">Your initial or funded account capital.</small>
                   </div>
 
                   <div class="form-group">
@@ -57,121 +61,122 @@ const settings = (() => {
                     <input type="number" step="0.1" min="0.1" id="set-default-rr" class="form-control" required>
                   </div>
 
-                  <div class="form-group" style="grid-column: 1 / -1;">
+                  <div class="form-group settings-form-wide">
                     <label for="set-default-pair">Default Trading Pair</label>
                     <input type="text" id="set-default-pair" class="form-control" placeholder="XAUUSD" required>
                   </div>
                 </div>
 
                 <!-- Live Balance Preview Box -->
-                <div class="settings-balance-preview" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13.5px;">
+                <div class="settings-balance-preview">
+                  <div class="settings-preview-row">
                     <span class="text-muted">Total Net Journal P&amp;L:</span>
-                    <span id="settings-preview-pnl" style="font-weight: 600;">$0.00</span>
+                    <span id="settings-preview-pnl">$0.00</span>
                   </div>
-                  <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; border-top: 1px dashed var(--border-subtle); padding-top: 10px;">
+                  <div class="settings-preview-row settings-preview-total">
                     <span>Calculated Current Balance:</span>
                     <span id="settings-preview-current" class="text-gold">$0.00</span>
                   </div>
                 </div>
 
-                <button type="submit" class="btn btn-gold" id="btn-save-settings" style="width: 100%;">
-                  💾 Save Account Settings
+                <button type="submit" class="btn btn-primary settings-save-btn" id="btn-save-settings">
+                  Save account settings
                 </button>
               </form>
             </div>
-          </div>
+          </section>
 
           <!-- 2. Tag Management (Setups & Mistakes) -->
-          <div class="settings-panel">
+          <section class="settings-panel">
             <div class="panel-header">
-              <h4 style="display:flex; align-items:center; gap:8px;">
-                <span>🏷️</span> Setup & Mistake Tags
-              </h4>
+              <div>
+                <h2>Setup &amp; mistake tags</h2>
+                <p>Keep labels consistent across your journal.</p>
+              </div>
             </div>
             <div class="panel-body">
-              <!-- Setups -->
-              <div style="margin-bottom: 24px;">
-                <label style="font-weight: 600; display:block; margin-bottom: 8px;">Trading Setups</label>
-                <div id="settings-setups-list" class="tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                  <span class="text-muted" style="font-size: 13px;">Loading tags...</span>
+              <div class="settings-tag-group">
+                <h3>Trading setups</h3>
+                <div id="settings-setups-list" class="tags-container settings-tags-container" aria-live="polite">
+                  <span class="text-muted settings-tag-state">Loading tags…</span>
                 </div>
-                <div class="tag-input-row" style="display: flex; gap: 8px;">
-                  <input type="text" id="new-setup-tag-input" class="form-control" placeholder="New setup name (e.g. Breaker Block, SFP)..." style="flex: 1;">
-                  <button type="button" class="btn btn-secondary" onclick="settings.addSetupTag()">+ Add Setup</button>
+                <div class="tag-input-row settings-tag-input-row">
+                  <input type="text" id="new-setup-tag-input" class="form-control" placeholder="e.g. Breaker Block, SFP">
+                  <button type="button" class="btn btn-secondary" onclick="settings.addSetupTag()">Add setup</button>
                 </div>
               </div>
 
-              <hr style="border-color: var(--border-subtle); margin: 20px 0;">
+              <hr class="settings-divider">
 
-              <!-- Mistakes -->
-              <div>
-                <label style="font-weight: 600; display:block; margin-bottom: 8px;">Mistake Tags</label>
-                <div id="settings-mistakes-list" class="tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
-                  <span class="text-muted" style="font-size: 13px;">Loading tags...</span>
+              <div class="settings-tag-group">
+                <h3>Mistake tags</h3>
+                <div id="settings-mistakes-list" class="tags-container settings-tags-container" aria-live="polite">
+                  <span class="text-muted settings-tag-state">Loading tags…</span>
                 </div>
-                <div class="tag-input-row" style="display: flex; gap: 8px;">
-                  <input type="text" id="new-mistake-tag-input" class="form-control" placeholder="New mistake tag (e.g. FOMO, Moving SL)..." style="flex: 1;">
-                  <button type="button" class="btn btn-secondary" onclick="settings.addMistakeTag()">+ Add Mistake</button>
+                <div class="tag-input-row settings-tag-input-row">
+                  <input type="text" id="new-mistake-tag-input" class="form-control" placeholder="e.g. FOMO, Moving SL">
+                  <button type="button" class="btn btn-secondary" onclick="settings.addMistakeTag()">Add mistake</button>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
           <!-- 3. Data Export Panel -->
-          <div class="settings-panel">
+          <section class="settings-panel">
             <div class="panel-header">
-              <h4 style="display:flex; align-items:center; gap:8px;">
-                <span>📊</span> Data Export (CSV)
-              </h4>
+              <div>
+                <h2>Data export</h2>
+                <p>Download records as CSV files.</p>
+              </div>
             </div>
             <div class="panel-body">
-              <p class="text-muted" style="margin-bottom:16px;">Export your trading data into standard CSV files for Excel, Python, or external spreadsheets.</p>
-              <div class="export-actions" style="display: flex; flex-direction: column; gap: 12px;">
-                <a href="/api/export/trades/csv" class="btn btn-secondary" target="_blank" download style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                  <span>📥</span> Export Trades (CSV)
+              <p class="text-muted settings-panel-copy">Export your trading data for spreadsheets and external analysis.</p>
+              <div class="export-actions settings-export-actions">
+                <a href="/api/export/trades/csv" class="btn btn-secondary" target="_blank" rel="noopener" download>
+                  Export trades (CSV)
                 </a>
-                <a href="/api/export/planned/csv" class="btn btn-secondary" target="_blank" download style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                  <span>📥</span> Export Missed / Planned Trades (CSV)
+                <a href="/api/export/planned/csv" class="btn btn-secondary" target="_blank" rel="noopener" download>
+                  Export planned trades (CSV)
                 </a>
-                <a href="/api/export/levels/csv" class="btn btn-secondary" target="_blank" download style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                  <span>📥</span> Export Level Tests (CSV)
+                <a href="/api/export/levels/csv" class="btn btn-secondary" target="_blank" rel="noopener" download>
+                  Export level tests (CSV)
                 </a>
               </div>
             </div>
-          </div>
+          </section>
           
           <!-- 4. Backup & Restore Panel -->
-          <div class="settings-panel">
+          <section class="settings-panel">
             <div class="panel-header">
-              <h4 style="display:flex; align-items:center; gap:8px;">
-                <span>🛡️</span> Backup & Restore (JSON)
-              </h4>
+              <div>
+                <h2>Backup &amp; restore</h2>
+                <p>Protect and recover your journal data.</p>
+              </div>
             </div>
             <div class="panel-body">
-              <p class="text-muted" style="margin-bottom:16px;">Download a complete JSON snapshot containing all trades, planned trades, level tests, and settings.</p>
+              <p class="text-muted settings-panel-copy">Download a complete JSON snapshot containing trades, planned levels, level tests, and settings.</p>
               
-              <div class="backup-actions">
-                <a href="/api/export/backup/all" class="btn btn-primary" target="_blank" download style="display:block; text-align:center; margin-bottom: 24px;">
-                  📦 Download Full JSON Backup
+              <div class="backup-actions settings-backup-actions">
+                <a href="/api/export/backup/all" class="btn btn-primary" target="_blank" rel="noopener" download>
+                  Download full JSON backup
                 </a>
                 
-                <hr style="border-color: var(--border-subtle); margin-bottom: 24px;">
+                <hr class="settings-divider">
                 
                 <form id="restore-form">
-                  <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 6px;">Restore from JSON Backup</label>
-                    <input type="file" id="restore-file" accept=".json" class="form-control" required>
-                    <small class="text-muted" style="display:block; margin-top:8px;">Restoring imports your records into the database. Existing tags and matching trades will be merged.</small>
+                  <div class="form-group settings-restore-group">
+                    <label for="restore-file">Restore from JSON backup</label>
+                    <input type="file" id="restore-file" accept=".json,application/json" class="form-control" required>
+                    <small class="text-muted settings-help-copy">Restoring imports records into the database. Existing tags and matching trades will be merged.</small>
                   </div>
-                  <button type="submit" class="btn btn-danger" id="btn-restore" style="width:100%">
-                    ⚠️ Upload & Restore
+                  <button type="submit" class="btn btn-danger settings-restore-btn" id="btn-restore">
+                    Upload &amp; restore
                   </button>
-                  <div id="restore-msg" style="margin-top:12px; font-size:13px; text-align:center;"></div>
+                  <div id="restore-msg" class="settings-restore-message" role="status" aria-live="polite"></div>
                 </form>
               </div>
             </div>
-          </div>
+          </section>
 
         </div>
       </div>
@@ -216,6 +221,16 @@ const settings = (() => {
       renderTagsList("settings-mistakes-list", mistakes, "mistake");
     } catch (err) {
       console.error("Failed to load settings data:", err);
+      ["settings-setups-list", "settings-mistakes-list"].forEach(containerId => {
+        const tagContainer = document.getElementById(containerId);
+        if (tagContainer) {
+          tagContainer.replaceChildren();
+          const message = document.createElement("span");
+          message.className = "text-muted settings-tag-state";
+          message.textContent = "Unable to load tags. Check your connection and refresh.";
+          tagContainer.appendChild(message);
+        }
+      });
       app.showToast("Failed to load settings data", "error");
     }
   }
@@ -242,20 +257,41 @@ const settings = (() => {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    container.replaceChildren();
     if (!tags || tags.length === 0) {
-      container.innerHTML = `<span class="text-muted" style="font-size: 13px;">No ${type} tags yet.</span>`;
+      const message = document.createElement("span");
+      message.className = "text-muted settings-tag-state";
+      message.textContent = `No ${type} tags yet.`;
+      container.appendChild(message);
       return;
     }
 
-    container.innerHTML = tags.map(tag => `
-      <div class="tag-chip" style="display:inline-flex; align-items:center; gap:6px; background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); padding: 5px 10px; border-radius: 20px; font-size: 12.5px;">
-        <span>${tag.name}</span>
-        ${tag.is_default 
-          ? `<span style="font-size: 10px; opacity: 0.6; background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 8px;">Default</span>`
-          : `<button type="button" onclick="settings.deleteTag(${tag.id}, '${type}')" style="background:none; border:none; color: var(--color-loss); cursor:pointer; font-size:12px; padding:0 2px;" title="Delete Tag">✕</button>`
-        }
-      </div>
-    `).join("");
+    tags.forEach(tag => {
+      const chip = document.createElement("div");
+      chip.className = "tag-chip settings-tag-chip";
+
+      const name = document.createElement("span");
+      name.textContent = tag.name;
+      chip.appendChild(name);
+
+      if (tag.is_default) {
+        const badge = document.createElement("span");
+        badge.className = "settings-default-tag";
+        badge.textContent = "Default";
+        chip.appendChild(badge);
+      } else {
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "settings-tag-delete";
+        remove.textContent = "×";
+        remove.title = `Delete ${type} tag`;
+        remove.setAttribute("aria-label", `Delete ${tag.name} ${type} tag`);
+        remove.addEventListener("click", () => deleteTag(tag.id, type));
+        chip.appendChild(remove);
+      }
+
+      container.appendChild(chip);
+    });
   }
 
   // ── Tag Actions ────────────────────────────────────────────────────
@@ -355,7 +391,7 @@ const settings = (() => {
         } finally {
           if (btn) {
             btn.disabled = false;
-            btn.textContent = "💾 Save Account Settings";
+            btn.textContent = "Save account settings";
           }
         }
       });
@@ -413,7 +449,7 @@ const settings = (() => {
           app.showToast(err.message || "Failed to restore backup", "error");
         } finally {
           btn.disabled = false;
-          btn.textContent = "⚠️ Upload & Restore";
+          btn.textContent = "Upload & restore";
           form.reset();
         }
       });

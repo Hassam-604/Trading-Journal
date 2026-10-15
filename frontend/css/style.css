@@ -3834,3 +3834,307 @@ a {
     padding: 13px;
   }
 }
+
+/* ── Stage 8: Settings page refinement ── */
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.settings-heading h1 {
+  color: var(--text-primary);
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.settings-heading .dashboard-intro-copy {
+  max-width: 700px;
+}
+
+.settings-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settings-panel {
+  min-width: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: none;
+}
+
+.settings-panel .panel-header {
+  display: flex;
+  align-items: center;
+  min-height: 70px;
+  padding: 15px 18px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 72%);
+}
+
+.settings-panel .panel-header h2 {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.settings-panel .panel-header p {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.settings-panel .panel-body {
+  min-width: 0;
+  padding: 18px;
+}
+
+.settings-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.settings-form-grid .form-group {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.settings-form-grid label,
+.settings-restore-group label {
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.settings-form-grid .form-control,
+.settings-restore-group .form-control,
+.settings-tag-input-row .form-control {
+  min-width: 0;
+  min-height: 38px;
+  font-size: 12px;
+}
+
+.settings-form-wide {
+  grid-column: 1 / -1;
+}
+
+.settings-currency-input {
+  position: relative;
+}
+
+.settings-currency-input span {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 12px;
+  color: var(--gold-accent);
+  font-weight: 600;
+  transform: translateY(-50%);
+}
+
+.settings-currency-input .form-control {
+  padding-left: 28px;
+  font-weight: 600;
+}
+
+.settings-help-copy {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.settings-balance-preview {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.settings-preview-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.settings-preview-row > :last-child {
+  font-weight: 600;
+  text-align: right;
+}
+
+.settings-preview-total {
+  margin-top: 9px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-subtle);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-save-btn,
+.settings-restore-btn {
+  width: 100%;
+  min-height: 40px;
+}
+
+.settings-tag-group h3 {
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.settings-tags-container {
+  display: flex;
+  min-height: 34px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.settings-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.settings-default-tag {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.settings-tag-delete {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-loss);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: background-color 150ms ease;
+}
+
+.settings-tag-delete:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.settings-tag-state {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.settings-tag-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-tag-input-row .form-control {
+  flex: 1;
+}
+
+.settings-tag-input-row .btn {
+  flex-shrink: 0;
+}
+
+.settings-divider {
+  margin: 18px 0;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-panel-copy {
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.settings-export-actions .btn {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-backup-actions > a {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.settings-restore-group {
+  margin-bottom: 14px;
+}
+
+.settings-restore-message {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 850px) {
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .settings-page {
+    gap: 14px;
+  }
+
+  .settings-panel .panel-body {
+    padding: 15px;
+  }
+
+  .settings-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-form-wide {
+    grid-column: auto;
+  }
+
+  .settings-tag-input-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-tag-input-row .btn {
+    width: 100%;
+  }
+}
