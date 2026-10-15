@@ -1402,6 +1402,173 @@ a {
   .cal-cell { min-height: 52px; }
 }
 
+.perf-page-header h1 {
+  color: var(--text-primary);
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.perf-page-header .dashboard-intro-copy {
+  max-width: 700px;
+}
+
+.perf-section {
+  min-width: 0;
+  padding: 22px;
+  border-radius: var(--radius-xl);
+}
+
+.perf-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.perf-section-heading h2 {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.perf-section-heading p {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.perf-chart-card {
+  height: 300px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.perf-chart-card canvas {
+  max-width: 100%;
+}
+
+.perf-state-message {
+  margin: 0;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-base);
+}
+
+.perf-year-title {
+  font-size: 20px;
+  letter-spacing: -0.025em;
+}
+
+.perf-year-summary {
+  gap: 8px;
+}
+
+.perf-stat {
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-base);
+}
+
+.perf-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.perf-table {
+  min-width: 650px;
+}
+
+.perf-table th {
+  white-space: nowrap;
+}
+
+.perf-table tbody tr:not(.week-row):hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.perf-table .month-row:focus-visible {
+  outline: 2px solid var(--gold-accent);
+  outline-offset: -2px;
+}
+
+.cal-wrapper {
+  overflow-x: auto;
+}
+
+.cal-day-headers,
+.cal-grid {
+  min-width: 520px;
+}
+
+.perf-calendar-error {
+  grid-column: 1 / -1;
+  align-self: center;
+  padding: 28px 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .perf-page {
+    gap: 14px;
+  }
+
+  .perf-section {
+    padding: 16px 14px;
+    border-radius: var(--radius-lg);
+  }
+
+  .perf-section-heading,
+  .perf-calendar-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .perf-chart-card {
+    height: 250px;
+    padding: 10px;
+  }
+
+  .perf-year-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .perf-year-summary {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .perf-stat {
+    min-width: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+    overflow-wrap: anywhere;
+  }
+
+  .cal-nav {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .cal-month-label {
+    min-width: 0;
+    flex: 1;
+    font-size: 12px;
+  }
+}
+
 /* ── Stage 7: Analytics Page ── */
 .analytics-page {
   display: flex;

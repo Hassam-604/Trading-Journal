@@ -53,12 +53,13 @@ const performance = (() => {
     const container = document.getElementById("perf-breakdown-container");
     if (!container) return;
     try {
-      container.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading performance data…</p></div>`;
+      container.innerHTML = `<div class="loading-state" role="status"><div class="spinner"></div><p>Loading performance data…</p></div>`;
       yearData = await api.getYearlyPerformance();
       renderYearTabs();
       renderAllYears();
     } catch (err) {
-      container.innerHTML = `<div class="empty-state"><p>Error loading performance data.</p></div>`;
+      console.error("Performance data failed:", err);
+      container.innerHTML = `<div class="empty-state perf-state-message" role="alert"><span class="empty-icon">⚠️</span><p>Unable to load performance data. Check your connection and try again.</p></div>`;
     }
   }
 
@@ -102,7 +103,7 @@ const performance = (() => {
     const container = document.getElementById("perf-breakdown-container");
     if (!container) return;
     if (!yearData.length) {
-      container.innerHTML = `<div class="empty-state"><span class="empty-icon">📊</span><p>No trades recorded yet.</p></div>`;
+      container.innerHTML = `<div class="empty-state perf-state-message"><span class="empty-icon">📊</span><p>No trades recorded yet. Your performance breakdown will appear here after you record trades.</p></div>`;
       return;
     }
     container.innerHTML = yearData.map(y => buildYearHTML(y)).join("");
@@ -119,7 +120,7 @@ const performance = (() => {
     return `
       <div class="perf-year-block">
         <div class="perf-year-header">
-          <h3 class="perf-year-title">📅 ${yd.year}</h3>
+          <h3 class="perf-year-title">${yd.year}</h3>
           <div class="perf-year-summary">
             <span class="perf-stat"><span class="perf-stat-label">Trades</span> <strong>${yd.trades}</strong></span>
             <span class="perf-stat"><span class="perf-stat-label">Win Rate</span> <strong>${fmtWr(yd.win_rate)}</strong></span>
@@ -127,21 +128,23 @@ const performance = (() => {
             <span class="perf-stat"><span class="perf-stat-label">Total R</span> <strong class="${pnlClass(yd.total_r)}">${yd.total_r >= 0 ? "+" : ""}${yd.total_r.toFixed(2)}R</strong></span>
           </div>
         </div>
-        <table class="perf-table">
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th>Trades</th>
-              <th>W</th>
-              <th>L</th>
-              <th>BE</th>
-              <th>Win%</th>
-              <th>P&amp;L ($)</th>
-              <th>R Total</th>
-            </tr>
-          </thead>
-          <tbody>${monthRows}</tbody>
-        </table>
+        <div class="perf-table-wrap">
+          <table class="perf-table">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>Trades</th>
+                <th>W</th>
+                <th>L</th>
+                <th>BE</th>
+                <th>Win%</th>
+                <th>P&amp;L ($)</th>
+                <th>R Total</th>
+              </tr>
+            </thead>
+            <tbody>${monthRows}</tbody>
+          </table>
+        </div>
       </div>`;
   }
 
@@ -159,8 +162,8 @@ const performance = (() => {
       </tr>`).join("");
 
     return `
-      <tr class="month-row toggleable" data-month="${m.month}">
-        <td class="month-label"><span class="toggle-icon">▶</span> ${m.month_label}</td>
+      <tr class="month-row toggleable" data-month="${m.month}" tabindex="0" aria-expanded="false">
+        <td class="month-label"><span class="toggle-icon" aria-hidden="true">▶</span> ${m.month_label}</td>
         <td>${m.trades}</td>
         <td class="positive">${m.wins}</td>
         <td class="negative">${m.losses}</td>
@@ -174,13 +177,22 @@ const performance = (() => {
 
   function attachToggleListeners() {
     document.querySelectorAll(".month-row.toggleable").forEach(row => {
-      row.addEventListener("click", () => {
+      const toggleMonth = () => {
         const month = row.dataset.month;
         const icon  = row.querySelector(".toggle-icon");
-        const weekRows = document.querySelectorAll(`.week-row[data-parent="${month}"]`);
         const isOpen = icon.textContent === "▼";
         icon.textContent = isOpen ? "▶" : "▼";
-        weekRows.forEach(r => r.classList.toggle("hidden-row", isOpen));
+        row.setAttribute("aria-expanded", String(!isOpen));
+        row.closest(".perf-year-block")
+          .querySelectorAll(`.week-row[data-parent="${month}"]`)
+          .forEach(r => r.classList.toggle("hidden-row", isOpen));
+      };
+      row.addEventListener("click", toggleMonth);
+      row.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggleMonth();
+        }
       });
     });
   }
@@ -194,6 +206,7 @@ const performance = (() => {
       renderEquityCurve(ctx, data);
     } catch (err) {
       console.error("Equity curve failed:", err);
+      ctx.parentElement.innerHTML = `<div class="empty-state perf-state-message" role="alert"><span class="empty-icon">⚠️</span><p>Unable to load equity data. Check your connection and try again.</p></div>`;
     }
   }
 
@@ -271,11 +284,12 @@ const performance = (() => {
     const grid = document.getElementById("cal-grid");
     if (!grid) return;
     try {
-      grid.innerHTML = `<div class="loading-state" style="grid-column:1/-1"><div class="spinner small"></div></div>`;
+      grid.innerHTML = `<div class="loading-state" role="status" aria-label="Loading calendar data" style="grid-column:1/-1"><div class="spinner small"></div></div>`;
       const days = await api.getCalendar(calendarYear, calendarMonth);
       renderCalendar(grid, days);
     } catch (err) {
-      grid.innerHTML = `<p style="grid-column:1/-1;color:var(--text-muted)">Error loading calendar.</p>`;
+      console.error("Performance calendar failed:", err);
+      grid.innerHTML = `<p class="perf-calendar-error" role="alert">Unable to load calendar data. Please try again.</p>`;
     }
   }
 
@@ -322,27 +336,37 @@ const performance = (() => {
   // ── Render (called by app.js) ──────────────────────────────────────
   function render(container) {
     container.innerHTML = `
-      <!-- Performance Page -->
       <div class="perf-page">
-
-        <!-- Equity Curve Section -->
-        <section class="perf-section">
-          <div class="section-header">
-            <h3 class="section-title">📈 Equity Curve</h3>
+        <header class="perf-page-header">
+          <div>
+            <p class="dashboard-eyebrow">PERFORMANCE</p>
+            <h1>Performance</h1>
+            <p class="dashboard-intro-copy">Explore your realized results over time, review daily outcomes, and expand each month for a weekly breakdown.</p>
           </div>
-          <div class="chart-card" style="height:280px;">
+        </header>
+
+        <section class="perf-section">
+          <div class="perf-section-heading">
+            <div>
+              <h2>Equity curve</h2>
+              <p>Cumulative realized P&amp;L across your recorded trades.</p>
+            </div>
+          </div>
+          <div class="chart-card perf-chart-card">
             <canvas id="perf-equity-chart"></canvas>
           </div>
         </section>
 
-        <!-- Calendar Section -->
         <section class="perf-section">
-          <div class="section-header">
-            <h3 class="section-title">📅 Trade Calendar</h3>
+          <div class="perf-section-heading perf-calendar-heading">
+            <div>
+              <h2>Trade calendar</h2>
+              <p>Daily realized results for the selected month.</p>
+            </div>
             <div class="cal-nav">
-              <button class="btn btn-secondary btn-sm" id="cal-prev">‹ Prev</button>
-              <span class="cal-month-label" id="cal-month-label">${MONTH_NAMES[calendarMonth]} ${calendarYear}</span>
-              <button class="btn btn-secondary btn-sm" id="cal-next">Next ›</button>
+              <button class="btn btn-secondary btn-sm" id="cal-prev" type="button" aria-label="Previous month">‹ Prev</button>
+              <span class="cal-month-label" id="cal-month-label" aria-live="polite">${MONTH_NAMES[calendarMonth]} ${calendarYear}</span>
+              <button class="btn btn-secondary btn-sm" id="cal-next" type="button" aria-label="Next month">Next ›</button>
             </div>
           </div>
           <div class="cal-wrapper">
@@ -355,10 +379,12 @@ const performance = (() => {
           </div>
         </section>
 
-        <!-- Performance Breakdown Section -->
         <section class="perf-section">
-          <div class="section-header">
-            <h3 class="section-title">🗓 Performance Breakdown</h3>
+          <div class="perf-section-heading perf-breakdown-heading">
+            <div>
+              <h2>Performance breakdown</h2>
+              <p>Select a year, then expand a month to review its weekly results.</p>
+            </div>
             <div class="tab-bar" id="perf-year-tabs">
               <button class="tab-btn active" id="perf-year-all" data-year="all">All Years</button>
             </div>
@@ -376,4 +402,3 @@ const performance = (() => {
   // ── Public ─────────────────────────────────────────────────────────
   return { render };
 })();
-
