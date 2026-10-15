@@ -38,7 +38,7 @@ const gallery = (() => {
         <div class="gallery-filters-grid">
 
           <div class="filter-group">
-            <label class="filter-label">Result</label>
+            <label class="filter-label" for="gf-result">Result</label>
             <select class="form-control filter-ctrl" id="gf-result">
               <option value="">All Results</option>
               <option value="Win">Win</option>
@@ -48,7 +48,7 @@ const gallery = (() => {
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Category</label>
+            <label class="filter-label" for="gf-category">Category</label>
             <select class="form-control filter-ctrl" id="gf-category">
               <option value="">All Categories</option>
               <option value="HTF">HTF</option>
@@ -63,7 +63,7 @@ const gallery = (() => {
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Direction</label>
+            <label class="filter-label" for="gf-direction">Direction</label>
             <select class="form-control filter-ctrl" id="gf-direction">
               <option value="">Any Direction</option>
               <option value="Buy">Buy</option>
@@ -72,14 +72,14 @@ const gallery = (() => {
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Setup</label>
+            <label class="filter-label" for="gf-setup">Setup</label>
             <select class="form-control filter-ctrl" id="gf-setup">
               <option value="">All Setups</option>
             </select>
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Session</label>
+            <label class="filter-label" for="gf-session">Session</label>
             <select class="form-control filter-ctrl" id="gf-session">
               <option value="">All Sessions</option>
               <option value="London">London</option>
@@ -90,7 +90,7 @@ const gallery = (() => {
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Review State</label>
+            <label class="filter-label" for="gf-reviewed">Review State</label>
             <select class="form-control filter-ctrl" id="gf-reviewed">
               <option value="">All</option>
               <option value="false">Unreviewed</option>
@@ -99,17 +99,17 @@ const gallery = (() => {
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Date From</label>
+            <label class="filter-label" for="gf-date-from">Date From</label>
             <input type="date" class="form-control filter-ctrl" id="gf-date-from">
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Date To</label>
+            <label class="filter-label" for="gf-date-to">Date To</label>
             <input type="date" class="form-control filter-ctrl" id="gf-date-to">
           </div>
 
           <div class="filter-group">
-            <label class="filter-label">Min R</label>
+            <label class="filter-label" for="gf-min-r">Min R</label>
             <input type="number" class="form-control filter-ctrl" id="gf-min-r" step="0.1" placeholder="e.g. 1.5">
           </div>
 
@@ -124,11 +124,11 @@ const gallery = (() => {
       <!-- Sort & view toggle row -->
       <div class="gallery-toolbar">
         <div class="gallery-view-btns">
-          <button class="view-toggle-btn active" id="view-grid" title="Grid View" onclick="gallery.setView('grid')">⊞ Grid</button>
-          <button class="view-toggle-btn" id="view-masonry" title="Masonry View" onclick="gallery.setView('masonry')">⧉ Masonry</button>
+          <button class="view-toggle-btn active" id="view-grid" type="button" aria-pressed="true" onclick="gallery.setView('grid')">⊞ Grid</button>
+          <button class="view-toggle-btn" id="view-masonry" type="button" aria-pressed="false" onclick="gallery.setView('masonry')">⧉ Masonry</button>
         </div>
         <div class="gallery-sort-group">
-          <label class="filter-label">Sort by</label>
+          <label class="filter-label" for="gf-sort">Sort by</label>
           <select class="form-control filter-ctrl" id="gf-sort" onchange="gallery.applySort()">
             <option value="date_desc">Date (Newest First)</option>
             <option value="date_asc">Date (Oldest First)</option>
@@ -305,7 +305,7 @@ const gallery = (() => {
     const dirClass = item.direction === "Buy" ? "dir-buy" : item.direction === "Sell" ? "dir-sell" : "";
 
     return `
-    <div class="gallery-thumb ${resultClass}" onclick="gallery.openLightbox(${idx})">
+    <div class="gallery-thumb ${resultClass}" role="button" tabindex="0" aria-label="Open screenshot ${idx + 1} in lightbox" onclick="gallery.openLightbox(${idx})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();gallery.openLightbox(${idx})}">
       <div class="thumb-img-wrap">
         <img
           data-src="/api/screenshots/file/${item.filename}"
@@ -383,16 +383,21 @@ const gallery = (() => {
   // ── View toggle (grid / masonry) ──────────────────────────────────────────
   function setView(mode) {
     const grid = document.getElementById("gallery-grid");
-    document.querySelectorAll(".view-toggle-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".view-toggle-btn").forEach(button => {
+      button.classList.remove("active");
+      button.setAttribute("aria-pressed", "false");
+    });
 
     if (mode === "masonry") {
       document.getElementById("view-masonry")?.classList.add("active");
+      document.getElementById("view-masonry")?.setAttribute("aria-pressed", "true");
       if (grid) {
         grid.classList.add("gallery-masonry");
         grid.classList.remove("gallery-grid-mode");
       }
     } else {
       document.getElementById("view-grid")?.classList.add("active");
+      document.getElementById("view-grid")?.setAttribute("aria-pressed", "true");
       if (grid) {
         grid.classList.remove("gallery-masonry");
         grid.classList.add("gallery-grid-mode");

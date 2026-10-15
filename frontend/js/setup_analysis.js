@@ -22,7 +22,7 @@ const setupAnalysis = (() => {
 
       <div class="gallery-header">
         <div>
-          <h1 class="gallery-title">🧩 Setup Analysis</h1>
+          <h1 class="gallery-title">Setup analysis</h1>
           <p class="gallery-subtitle text-secondary">Performance breakdown and screenshot gallery per setup</p>
         </div>
       </div>
@@ -30,7 +30,7 @@ const setupAnalysis = (() => {
       <!-- Setup selector -->
       <div class="card-surface sa-filter-bar">
         <div class="filter-group" style="max-width:320px;">
-          <label class="filter-label">Select Setup</label>
+          <label class="filter-label" for="sa-setup-select">Select setup</label>
           <select class="form-control" id="sa-setup-select" onchange="setupAnalysis.onSetupChange()">
             <option value="">-- Choose a Setup --</option>
           </select>
@@ -256,7 +256,7 @@ const setupAnalysis = (() => {
     const rText = rVal !== null && rVal !== undefined ? `${rVal > 0 ? "+" : ""}${Number(rVal).toFixed(2)}R` : "";
 
     return `
-    <div class="gallery-thumb ${resultClass}" onclick="setupAnalysis.openLightbox(${idx})">
+    <div class="gallery-thumb ${resultClass}" role="button" tabindex="0" aria-label="Open setup screenshot ${idx + 1} in lightbox" onclick="setupAnalysis.openLightbox(${idx})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();setupAnalysis.openLightbox(${idx})}">
       <div class="thumb-img-wrap">
         <img data-src="/api/screenshots/file/${item.filename}" alt="${item.category || 'Screenshot'}"
           onerror="this.parentElement.innerHTML='<div class=\\'thumb-no-img\\'>No Image</div>'">
