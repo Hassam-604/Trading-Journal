@@ -86,6 +86,36 @@ const settings = (() => {
             </div>
           </section>
 
+          <section class="settings-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Journal security</h2>
+                <p>Change the password used to access this journal.</p>
+              </div>
+            </div>
+            <div class="panel-body">
+              <form id="password-change-form" class="security-form">
+                <div class="form-group">
+                  <label for="security-current-password">Current password</label>
+                  <input id="security-current-password" name="current_password" class="form-control" type="password" autocomplete="current-password" maxlength="128" required>
+                </div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="security-new-password">New password</label>
+                    <input id="security-new-password" name="new_password" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+                    <small class="text-muted settings-help-copy">Use at least 12 characters.</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="security-confirm-password">Confirm new password</label>
+                    <input id="security-confirm-password" name="confirm_password" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+                  </div>
+                </div>
+                <p id="security-password-message" class="security-password-message" role="status"></p>
+                <button type="submit" id="btn-change-password" class="btn btn-secondary">Update password</button>
+              </form>
+            </div>
+          </section>
+
           <!-- 2. Tag Management (Setups & Mistakes) -->
           <section class="settings-panel">
             <div class="panel-header">
@@ -348,6 +378,42 @@ const settings = (() => {
 
   // ── Listeners ──────────────────────────────────────────────────────
   function attachListeners() {
+    const passwordForm = document.getElementById("password-change-form");
+    if (passwordForm) {
+      passwordForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const currentPassword = passwordForm.elements.current_password.value;
+        const newPassword = passwordForm.elements.new_password.value;
+        const confirmation = passwordForm.elements.confirm_password.value;
+        const message = document.getElementById("security-password-message");
+        const button = document.getElementById("btn-change-password");
+
+        if (newPassword !== confirmation) {
+          message.textContent = "The new passwords do not match.";
+          message.classList.add("is-error");
+          return;
+        }
+
+        button.disabled = true;
+        message.textContent = "";
+        message.classList.remove("is-error");
+        try {
+          await api.changePassword({
+            current_password: currentPassword,
+            new_password: newPassword,
+          });
+          passwordForm.reset();
+          message.textContent = "Password updated. Other active sessions have been signed out.";
+          app.showToast("Password updated successfully.", "success");
+        } catch (error) {
+          message.textContent = error.message;
+          message.classList.add("is-error");
+        } finally {
+          button.disabled = false;
+        }
+      });
+    }
+
     // 1. Live preview on starting balance typing
     const elBal = document.getElementById("set-starting-balance");
     if (elBal) {

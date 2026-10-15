@@ -14,17 +14,25 @@ const app = {
 
 
   async init() {
+    if (typeof auth !== "undefined") auth.showLoading();
     // 1. Fetch initial data (Settings, Tags, KPI)
     try {
-      this.state.settings = await api.getSettings();
-      this.state.setups = await api.getSetupTags();
-      this.state.mistakes = await api.getMistakeTags();
-      this.state.dashboardKPI = await api.getDashboardKPI();
+      const [settingsData, setups, mistakes, dashboardKPI] = await Promise.all([
+        api.getSettings(),
+        api.getSetupTags(),
+        api.getMistakeTags(),
+        api.getDashboardKPI(),
+      ]);
+      this.state.settings = settingsData;
+      this.state.setups = setups;
+      this.state.mistakes = mistakes;
+      this.state.dashboardKPI = dashboardKPI;
       
       this.updateTopbarBalance();
       this.updateSidebarKPI();
     } catch (err) {
       console.error("Initialization failed:", err);
+      if (err.status === 401) return;
     }
 
     // 2. Setup Navigation & mobile menu
@@ -33,6 +41,9 @@ const app = {
 
     // 3. Load initial page
     this.navigateTo(this.state.currentPage);
+    document.getElementById("startup-screen").hidden = true;
+    document.getElementById("auth-screen").hidden = true;
+    document.getElementById("application-shell").hidden = false;
   },
 
   setupMobileMenu() {

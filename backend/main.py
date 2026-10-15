@@ -8,8 +8,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 
 from .database import engine, Base, SessionLocal
 from . import crud
@@ -21,6 +21,7 @@ from .routers import (
     analytics,
     settings,
     export,
+    auth,
 )
 
 # Paths
@@ -66,14 +67,43 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS setup
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+PUBLIC_API_PATHS = {
+    "/api/health",
+    "/api/auth/status",
+    "/api/auth/setup",
+    "/api/auth/login",
+    "/api/auth/logout",
+}
+
+
+@app.middleware("http")
+async def protect_private_routes(request, call_next):
+    path = request.url.path
+    is_private = (
+        (path.startswith("/api/") and path not in PUBLIC_API_PATHS)
+        or path.startswith("/uploads/")
+        or path in {"/docs", "/docs/oauth2-redirect", "/redoc", "/openapi.json"}
+    )
+    if is_private:
+        with SessionLocal() as db:
+            if not auth.request_is_authenticated(request, db):
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Authentication required."},
+                )
+
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        origin = request.headers.get("origin")
+        if origin:
+            expected_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
+            if origin.rstrip("/").lower() != expected_origin.rstrip("/").lower():
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Cross-origin requests are not allowed."},
+                )
+
+    return await call_next(request)
 
 # Include API Routers
 app.include_router(trades.router)
@@ -83,6 +113,7 @@ app.include_router(screenshots.router)
 app.include_router(analytics.router)
 app.include_router(settings.router)
 app.include_router(export.router)
+app.include_router(auth.router)
 
 
 @app.get("/api/health", tags=["Health"])

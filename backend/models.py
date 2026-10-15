@@ -1,5 +1,5 @@
 """
-SQLAlchemy ORM models — 7 tables.
+SQLAlchemy ORM models — application data and single-user authentication.
 
 Settings, SetupTag, MistakeTag, Trade, PlannedTrade, LevelTest, Screenshot
 """
@@ -26,6 +26,17 @@ class Settings(Base):
     currency        = Column(String(10), default="USD")
     default_pair    = Column(String(20), default="XAUUSD")
     default_rr      = Column(Float, default=2.0)
+
+
+# ─── Authentication ─────────────────────────────────────────────
+
+class AuthCredential(Base):
+    __tablename__ = "auth_credentials"
+
+    id              = Column(Integer, primary_key=True, default=1)
+    password_hash   = Column(String(200), nullable=False)
+    session_version = Column(Integer, nullable=False, default=1)
+    created_at      = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 # ─── 2. Setup Tags ──────────────────────────────────────────────

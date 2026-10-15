@@ -24,6 +24,7 @@ secrets.json
 data/*.db
 data/*.sqlite
 data/*.sqlite3
+data/.auth_session.key
 
 # Uploaded Media / Screenshots
 backend/uploads/*

@@ -47,6 +47,7 @@ A high-performance, dark-themed trading journal web application built for multi-
 - **Backend**: FastAPI (Python 3.10+), SQLAlchemy, SQLite, Pydantic v2, Uvicorn
 - **Frontend**: Vanilla JavaScript (ES6+ Modules), Modern CSS3 (Dark Theme, CSS Variables, Glassmorphism), Chart.js
 - **Storage**: SQLite database (`data/journal.db`) and local upload directory (`backend/uploads/`)
+- **Access protection**: single-user password setup, signed expiring session cookie, and server-side API protection
 
 ---
 
@@ -89,7 +90,11 @@ A high-performance, dark-themed trading journal web application built for multi-
   ```
 
 Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000) to view the journal.
-Interactive API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+On first launch, create a password of at least 12 characters. The password is stored as a salted PBKDF2 hash, and the session-signing key is created locally in the ignored `data/` directory. Change your password from **Settings → Journal security**. Sessions expire after 12 hours.
+
+This login is intended for the app's default local-only Windows launcher (`127.0.0.1`). Do not expose this development server directly to the internet or a shared network; use a properly configured HTTPS deployment and additional operational protections if remote access is needed. Authenticated API documentation is available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+If you forget your password, stop the app and run `python -m backend.auth_admin reset-password` from the project folder. The command prompts for a new password without echoing it and preserves all journal records.
 
 ---
 

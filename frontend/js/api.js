@@ -18,8 +18,11 @@ const api = {
       });
 
       if (!res.ok) {
+        if (typeof auth !== "undefined") auth.handleUnauthorized(res);
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `API Error: ${res.status} ${res.statusText}`);
+        const error = new Error(errData.detail || `API Error: ${res.status} ${res.statusText}`);
+        error.status = res.status;
+        throw error;
       }
 
       // If response is empty or 204
@@ -32,7 +35,7 @@ const api = {
       return await res.text();
     } catch (err) {
       console.error("API Request Failed:", err);
-      app.showToast(err.message, "error");
+      if (err.status !== 401) app.showToast(err.message, "error");
       throw err;
     }
   },
@@ -93,6 +96,12 @@ const api = {
       body: JSON.stringify(data),
     });
   },
+  async changePassword(data) {
+    return this.request("/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
   async restoreJSON(file) {
     const formData = new FormData();
     formData.append("file", file);
@@ -100,7 +109,12 @@ const api = {
       method: "POST",
       body: formData,
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      if (typeof auth !== "undefined") auth.handleUnauthorized(res);
+      const error = new Error(await res.text());
+      error.status = res.status;
+      throw error;
+    }
     return res.json();
   },
   async getSetupTags() {
@@ -250,13 +264,16 @@ const api = {
         body: formData, // Do not set Content-Type, browser sets it with boundary for FormData
       });
       if (!res.ok) {
+        if (typeof auth !== "undefined") auth.handleUnauthorized(res);
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || "Upload failed");
+        const error = new Error(errData.detail || "Upload failed");
+        error.status = res.status;
+        throw error;
       }
       return await res.json();
     } catch (err) {
       console.error("Upload Failed:", err);
-      app.showToast(err.message, "error");
+      if (err.status !== 401) app.showToast(err.message, "error");
       throw err;
     }
   },
