@@ -17,10 +17,11 @@ const dashboard = {
 
   async render(container) {
     container.innerHTML = `
-      <div id="dash-loading" style="padding: 40px; text-align: center; color: var(--text-muted);">
-        Loading dashboard analytics...
+      <div id="dash-loading" class="dashboard-loading" role="status">
+        <span class="dashboard-spinner" aria-hidden="true"></span>
+        <span>Loading your journal metrics…</span>
       </div>
-      <div id="dash-content" style="display: none;"></div>
+      <div id="dash-content" class="dashboard-content" hidden></div>
     `;
 
     try {
@@ -35,8 +36,8 @@ const dashboard = {
 
       const dashContent = document.getElementById("dash-content");
       const loading = document.getElementById("dash-loading");
-      if (loading) loading.style.display = "none";
-      if (dashContent) dashContent.style.display = "block";
+      if (loading) loading.hidden = true;
+      if (dashContent) dashContent.hidden = false;
 
       // Render all sections
       this.renderKPIs(dashContent, kpi);
@@ -51,11 +52,11 @@ const dashboard = {
     } catch (err) {
       console.error("Dashboard render failed:", err);
       container.innerHTML = `
-        <div class="empty-state">
+        <div class="empty-state dashboard-load-error">
           <div class="empty-icon">⚠️</div>
           <div class="empty-title">Failed to load Dashboard data</div>
           <div class="empty-desc">${err.message || 'Please check backend server connection.'}</div>
-          <button class="btn btn-secondary" style="margin-top: 15px;" onclick="dashboard.render(document.getElementById('content-body'))">Retry</button>
+          <button class="btn btn-secondary" onclick="dashboard.render(document.getElementById('content-body'))">Retry</button>
         </div>
       `;
     }
@@ -67,22 +68,34 @@ const dashboard = {
     const rClass = kpi.total_r > 0 ? "text-win" : kpi.total_r < 0 ? "text-loss" : "text-be";
 
     const kpiHtml = `
+      <header class="dashboard-intro">
+        <div>
+          <p class="dashboard-eyebrow">YOUR JOURNAL</p>
+          <h1>Performance overview</h1>
+          <p class="dashboard-intro-copy">Review your results, patterns, and recent execution.</p>
+        </div>
+      </header>
       <div class="kpi-grid">
         <!-- Account Balance -->
-        <div class="kpi-card kpi-balance-card" onclick="app.openEditBalanceModal()" style="cursor: pointer;" title="Click to edit starting balance">
-          <div class="kpi-header">
+        <button type="button" class="kpi-card kpi-balance-card" onclick="app.openEditBalanceModal()" title="Edit starting balance">
+          <span class="kpi-header">
             <span class="kpi-label">Account Balance</span>
-            <span class="kpi-icon" title="Edit Balance">💰 <span class="kpi-edit-icon" style="font-size:12px; opacity:0.7;">✏️</span></span>
-          </div>
-          <div class="kpi-value text-gold">$${kpi.current_balance.toFixed(2)}</div>
-          <div class="kpi-subtext">Net P&L: <span class="${pnlClass}">${app.formatMoney(kpi.total_pnl)}</span> <span class="kpi-action-link" style="color:var(--color-gold); font-size:11px; margin-left:6px; opacity:0.8;">• Edit</span></div>
-        </div>
+            <span class="kpi-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18m-5 4h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span class="kpi-edit-icon">↗</span>
+            </span>
+          </span>
+          <span class="kpi-value text-gold">$${kpi.current_balance.toFixed(2)}</span>
+          <span class="kpi-subtext">Net P&amp;L: <span class="${pnlClass}">${app.formatMoney(kpi.total_pnl)}</span> <span class="kpi-action-link">Edit balance</span></span>
+        </button>
 
         <!-- Total Trades -->
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-label">Total Trades</span>
-            <span class="kpi-icon">📋</span>
+            <span class="kpi-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 8h6m-6 4h6m-6 4h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
           </div>
           <div class="kpi-value">${kpi.total_trades}</div>
           <div class="kpi-subtext">
@@ -96,7 +109,9 @@ const dashboard = {
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-label">Win Rate</span>
-            <span class="kpi-icon">🎯</span>
+            <span class="kpi-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
+            </span>
           </div>
           <div class="kpi-value ${kpi.win_rate >= 50 ? 'text-win' : 'text-loss'}">${kpi.win_rate}%</div>
           <div class="kpi-subtext">${kpi.wins} wins of ${kpi.wins + kpi.losses} closed</div>
@@ -106,7 +121,9 @@ const dashboard = {
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-label">Total P&L</span>
-            <span class="kpi-icon">💵</span>
+            <span class="kpi-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 17 10 12l3 3 6-7m-5 0h5v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
           </div>
           <div class="kpi-value ${pnlClass}">${app.formatMoney(kpi.total_pnl)}</div>
           <div class="kpi-subtext">Avg: ${app.formatMoney(kpi.total_trades > 0 ? kpi.total_pnl / kpi.total_trades : 0)} / trade</div>
@@ -116,7 +133,7 @@ const dashboard = {
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-label">Total R-Multiple</span>
-            <span class="kpi-icon">📐</span>
+            <span class="kpi-icon kpi-icon-letter" aria-hidden="true">R</span>
           </div>
           <div class="kpi-value ${rClass}">${app.formatR(kpi.total_r)}</div>
           <div class="kpi-subtext">Avg R: ${app.formatR(kpi.avg_r)}</div>
@@ -126,7 +143,9 @@ const dashboard = {
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-label">Profit Factor</span>
-            <span class="kpi-icon">⚡</span>
+            <span class="kpi-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="m13.5 2-8 11h6l-1 9 8-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
           </div>
           <div class="kpi-value text-primary">${kpi.profit_factor.toFixed(2)}</div>
           <div class="kpi-subtext">Best: <span class="text-win">${app.formatMoney(kpi.largest_win)}</span> | Worst: <span class="text-loss">${app.formatMoney(kpi.largest_loss)}</span></div>
@@ -146,13 +165,13 @@ const dashboard = {
         <!-- Equity Curve -->
         <div class="chart-card">
           <div class="chart-card-header">
-            <div class="chart-title"><span>📈</span> Cumulative Equity Curve</div>
-            <span class="badge badge-tag">${equityPoints.length} points</span>
+            <div class="chart-title">Cumulative equity curve</div>
+            <span class="badge badge-tag">${equityPoints.length} ${equityPoints.length === 1 ? "point" : "points"}</span>
           </div>
           <div class="chart-canvas-container">
             ${hasTrades 
-              ? `<canvas id="dash-equity-canvas"></canvas>` 
-              : `<div class="empty-state" style="padding: 40px 0;"><div class="empty-desc">No trade data for equity curve yet.</div></div>`
+              ? `<canvas id="dash-equity-canvas" role="img" aria-label="Cumulative equity curve"></canvas>`
+              : `<div class="dashboard-chart-empty"><span class="dashboard-empty-mark" aria-hidden="true">—</span><p>No trade data for the equity curve yet.</p></div>`
             }
           </div>
         </div>
@@ -160,13 +179,13 @@ const dashboard = {
         <!-- Monthly P&L -->
         <div class="chart-card">
           <div class="chart-card-header">
-            <div class="chart-title"><span>📊</span> Monthly P&L ($)</div>
-            <span class="badge badge-tag">${monthlyPnl.length} Months</span>
+            <div class="chart-title">Monthly P&amp;L</div>
+            <span class="badge badge-tag">${monthlyPnl.length} ${monthlyPnl.length === 1 ? "month" : "months"}</span>
           </div>
           <div class="chart-canvas-container">
             ${monthlyPnl.length > 0 
-              ? `<canvas id="dash-monthly-canvas"></canvas>` 
-              : `<div class="empty-state" style="padding: 40px 0;"><div class="empty-desc">No monthly trade records yet.</div></div>`
+              ? `<canvas id="dash-monthly-canvas" role="img" aria-label="Monthly profit and loss chart"></canvas>`
+              : `<div class="dashboard-chart-empty"><span class="dashboard-empty-mark" aria-hidden="true">—</span><p>No monthly trade records yet.</p></div>`
             }
           </div>
         </div>
@@ -185,11 +204,11 @@ const dashboard = {
         const pnlCls = s.pnl > 0 ? "text-win" : s.pnl < 0 ? "text-loss" : "text-be";
         sessionRows += `
           <tr>
-            <td style="font-weight: 600;">${s.session}</td>
+            <td class="dashboard-table-primary">${s.session}</td>
             <td>${s.trades}</td>
             <td><span class="text-win">${s.wins}</span> / <span class="text-loss">${s.losses}</span></td>
             <td><span class="badge ${s.win_rate >= 50 ? 'badge-win' : 'badge-loss'}">${s.win_rate}%</span></td>
-            <td class="${pnlCls}" style="font-weight: 700;">${app.formatMoney(s.pnl)}</td>
+            <td class="dashboard-table-pnl ${pnlCls}">${app.formatMoney(s.pnl)}</td>
             <td>${app.formatR(s.avg_r)}</td>
           </tr>
         `;
@@ -205,11 +224,11 @@ const dashboard = {
         const pnlCls = st.pnl > 0 ? "text-win" : st.pnl < 0 ? "text-loss" : "text-be";
         setupRows += `
           <tr>
-            <td style="font-weight: 600;"><span class="badge badge-tag">${st.setup}</span></td>
+              <td class="dashboard-table-primary"><span class="badge badge-tag">${st.setup}</span></td>
             <td>${st.trades}</td>
             <td><span class="text-win">${st.wins}</span> / <span class="text-loss">${st.losses}</span></td>
             <td><span class="badge ${st.win_rate >= 50 ? 'badge-win' : 'badge-loss'}">${st.win_rate}%</span></td>
-            <td class="${pnlCls}" style="font-weight: 700;">${app.formatMoney(st.pnl)}</td>
+              <td class="dashboard-table-pnl ${pnlCls}">${app.formatMoney(st.pnl)}</td>
             <td>${app.formatR(st.avg_r)}</td>
           </tr>
         `;
@@ -221,9 +240,9 @@ const dashboard = {
     const tablesHtml = `
       <div class="dashboard-tables-grid">
         <!-- Session Performance -->
-        <div class="table-card" style="padding: 16px;">
+        <div class="table-card dashboard-table-card">
           <div class="section-title-bar">
-            <div class="section-title"><span>🕒</span> Session Performance</div>
+            <div class="section-title">Session performance</div>
           </div>
           <div class="table-responsive">
             <table class="data-table">
@@ -245,9 +264,9 @@ const dashboard = {
         </div>
 
         <!-- Setup Performance -->
-        <div class="table-card" style="padding: 16px;">
+        <div class="table-card dashboard-table-card">
           <div class="section-title-bar">
-            <div class="section-title"><span>🎯</span> Setup Performance</div>
+            <div class="section-title">Setup performance</div>
           </div>
           <div class="table-responsive">
             <table class="data-table">
@@ -285,22 +304,24 @@ const dashboard = {
         const pnlClass = t.pnl > 0 ? "text-win" : t.pnl < 0 ? "text-loss" : "text-be";
 
         rowsHtml += `
-          <tr style="cursor: pointer;" onclick="dashboard.openTradeDetailModal(${t.id})" title="Click to view details">
+          <tr class="dashboard-trade-row" onclick="dashboard.openTradeDetailModal(${t.id})" title="Click to view details">
             <td>
-              <div style="font-weight: 600;">${t.date}</div>
-              <div class="text-muted" style="font-size: 11px;">${t.time}</div>
+              <div class="dashboard-table-primary">${t.date}</div>
+              <div class="dashboard-trade-time text-muted">${t.time}</div>
             </td>
-            <td><b>${t.pair}</b> <span class="text-secondary" style="font-size: 11px;">(${t.session})</span></td>
+            <td><b>${t.pair}</b> <span class="dashboard-trade-session text-secondary">(${t.session})</span></td>
             <td><span class="badge ${dirClass}">${t.direction}</span></td>
             <td>${t.setup ? `<span class="badge badge-tag">${t.setup}</span>` : '-'}</td>
             <td>${t.rr.toFixed(2)}</td>
             <td><span class="badge ${resClass}">${t.result}</span></td>
-            <td class="${pnlClass}" style="font-weight: 700;">
+            <td class="dashboard-table-pnl ${pnlClass}">
               <div>${app.formatMoney(t.pnl)}</div>
-              <div style="font-size: 11px;">${app.formatR(t.r_multiple)}</div>
+              <div class="dashboard-trade-r">${app.formatR(t.r_multiple)}</div>
             </td>
             <td>
-              <button class="icon-btn" onclick="event.stopPropagation(); dashboard.openTradeDetailModal(${t.id})">👁️</button>
+              <button class="icon-btn" type="button" aria-label="View trade details" title="View trade details" onclick="event.stopPropagation(); dashboard.openTradeDetailModal(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+              </button>
             </td>
           </tr>
         `;
@@ -309,8 +330,9 @@ const dashboard = {
       rowsHtml = `
         <tr>
           <td colspan="8">
-            <div class="empty-state" style="padding: 24px;">
-              <div class="empty-desc">No recent trades found. Click "Add Trade" above to begin.</div>
+            <div class="dashboard-table-empty">
+              <p>No recent trades yet.</p>
+              <span>Add a trade to begin building your journal history.</span>
             </div>
           </td>
         </tr>
@@ -318,9 +340,9 @@ const dashboard = {
     }
 
     const recentHtml = `
-      <div class="table-card" style="margin-top: 6px; padding: 18px 20px;">
+      <div class="table-card dashboard-table-card dashboard-recent-trades">
         <div class="section-title-bar">
-          <div class="section-title"><span>📒</span> Recent Trades</div>
+          <div class="section-title">Recent trades</div>
           <button class="btn btn-secondary btn-sm" onclick="app.navigateTo('journal')">View Full Journal →</button>
         </div>
         <div class="table-responsive">
@@ -357,6 +379,12 @@ const dashboard = {
     } catch (e) {
       console.error(e);
     }
+  },
+
+  chartAnimation() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? false
+      : { duration: 180 };
   },
 
   // ── 5. Chart.js Initializers ──
@@ -396,14 +424,15 @@ const dashboard = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: this.chartAnimation(),
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#1a202c",
-            borderColor: "#283040",
+            backgroundColor: "#181e26",
+            borderColor: "#2a3440",
             borderWidth: 1,
-            titleColor: "#f0f3f8",
-            bodyColor: "#9aa4b5",
+            titleColor: "#f1f3f6",
+            bodyColor: "#a4adba",
             callbacks: {
               label: (ctx) => `Cumulative P&L: $${ctx.raw.toFixed(2)}`
             }
@@ -412,12 +441,12 @@ const dashboard = {
         scales: {
           x: {
             grid: { color: "rgba(255, 255, 255, 0.04)" },
-            ticks: { color: "#5e697d", font: { size: 10 }, maxTicksLimit: 8 }
+            ticks: { color: "#778392", font: { size: 10 }, maxTicksLimit: 8 }
           },
           y: {
             grid: { color: "rgba(255, 255, 255, 0.04)" },
             ticks: {
-              color: "#5e697d",
+              color: "#778392",
               font: { size: 10 },
               callback: (val) => `$${val}`
             }
@@ -457,14 +486,15 @@ const dashboard = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: this.chartAnimation(),
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: "#1a202c",
-            borderColor: "#283040",
+            backgroundColor: "#181e26",
+            borderColor: "#2a3440",
             borderWidth: 1,
-            titleColor: "#f0f3f8",
-            bodyColor: "#9aa4b5",
+            titleColor: "#f1f3f6",
+            bodyColor: "#a4adba",
             callbacks: {
               label: (ctx) => `Net P&L: $${ctx.raw.toFixed(2)}`
             }
@@ -473,12 +503,12 @@ const dashboard = {
         scales: {
           x: {
             grid: { color: "rgba(255, 255, 255, 0.04)" },
-            ticks: { color: "#5e697d", font: { size: 10 } }
+            ticks: { color: "#778392", font: { size: 10 } }
           },
           y: {
             grid: { color: "rgba(255, 255, 255, 0.04)" },
             ticks: {
-              color: "#5e697d",
+              color: "#778392",
               font: { size: 10 },
               callback: (val) => `$${val}`
             }
