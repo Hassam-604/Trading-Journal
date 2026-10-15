@@ -6,34 +6,57 @@
 const analytics = (() => {
   let reportData = null;
 
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    })[character]);
+  }
+
   // ── Render ─────────────────────────────────────────────────────────
   function render(container) {
     container.innerHTML = `
       <div class="analytics-page">
-        <!-- Filters Sidebar -->
-        <aside class="analytics-filters">
-          <div class="section-header">
-            <h3 class="section-title">🔍 Filters</h3>
-            <button class="btn btn-secondary btn-sm" id="btn-clear-filters">Clear</button>
+        <header class="analytics-heading">
+          <div>
+            <p class="dashboard-eyebrow">ANALYSIS</p>
+            <h1>Advanced analytics</h1>
+            <p class="dashboard-intro-copy">Filter your trade history to compare performance across setups, sessions, and execution habits.</p>
           </div>
-          
+        </header>
+
+        <div class="analytics-workspace">
+          <aside class="analytics-filters">
+            <div class="analytics-filter-heading">
+              <div>
+                <h2>Trade filters</h2>
+                <p>Refine the trades included in this report.</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-clear-filters" type="button">Clear</button>
+            </div>
+
           <form id="analytics-filter-form" class="filter-form">
             <div class="form-group">
-              <label>Date Range</label>
-              <div style="display:flex;gap:8px;">
-                <input type="date" name="date_from" class="form-control" title="From">
-                <input type="date" name="date_to" class="form-control" title="To">
+              <span class="analytics-filter-label">Date range</span>
+              <div class="analytics-date-range">
+                <label for="analytics-date-from">From</label>
+                <input type="date" id="analytics-date-from" name="date_from" class="form-control">
+                <label for="analytics-date-to">To</label>
+                <input type="date" id="analytics-date-to" name="date_to" class="form-control">
               </div>
             </div>
             
             <div class="form-group">
-              <label>Pair / Asset</label>
-              <input type="text" name="pair" class="form-control" placeholder="e.g. EURUSD, BTC, NAS100">
+              <label for="analytics-pair">Pair / asset</label>
+              <input type="text" id="analytics-pair" name="pair" class="form-control" placeholder="e.g. EURUSD, BTC, NAS100">
             </div>
 
             <div class="form-group">
-              <label>Session</label>
-              <select name="session_filter" class="form-control">
+              <label for="analytics-session">Session</label>
+              <select id="analytics-session" name="session_filter" class="form-control">
                 <option value="">All</option>
                 <option value="Asia">Asia</option>
                 <option value="London">London</option>
@@ -43,8 +66,8 @@ const analytics = (() => {
             </div>
 
             <div class="form-group">
-              <label>Direction</label>
-              <select name="direction" class="form-control">
+              <label for="analytics-direction">Direction</label>
+              <select id="analytics-direction" name="direction" class="form-control">
                 <option value="">All</option>
                 <option value="Buy">Buy</option>
                 <option value="Sell">Sell</option>
@@ -52,15 +75,15 @@ const analytics = (() => {
             </div>
 
             <div class="form-group">
-              <label>Setup</label>
+              <label for="analytics-setup-select">Setup</label>
               <select name="setup" class="form-control" id="analytics-setup-select">
                 <option value="">All</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label>Result</label>
-              <select name="result" class="form-control">
+              <label for="analytics-result">Result</label>
+              <select id="analytics-result" name="result" class="form-control">
                 <option value="">All</option>
                 <option value="Win">Win</option>
                 <option value="Loss">Loss</option>
@@ -69,8 +92,8 @@ const analytics = (() => {
             </div>
 
             <div class="form-group">
-              <label>Rule Followed</label>
-              <select name="rule_followed" class="form-control">
+              <label for="analytics-rule-followed">Rule followed</label>
+              <select id="analytics-rule-followed" name="rule_followed" class="form-control">
                 <option value="">All</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
@@ -78,14 +101,14 @@ const analytics = (() => {
               </select>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px;">Apply Filters</button>
+            <button type="submit" class="btn btn-primary analytics-apply-btn">Apply filters</button>
           </form>
-        </aside>
+          </aside>
 
-        <!-- Reports Area -->
-        <main class="analytics-content" id="analytics-reports">
-          <div class="loading-state"><div class="spinner"></div><p>Loading analytics…</p></div>
-        </main>
+          <section class="analytics-content" id="analytics-reports" aria-live="polite" aria-busy="true">
+            <div class="loading-state" role="status"><div class="spinner"></div><p>Loading analytics…</p></div>
+          </section>
+        </div>
       </div>
     `;
 
@@ -97,9 +120,12 @@ const analytics = (() => {
   // ── Init & Listeners ───────────────────────────────────────────────
   function populateDropdowns() {
     const setupSelect = document.getElementById("analytics-setup-select");
-    if (setupSelect && app.state.setups) {
+    if (setupSelect && Array.isArray(app.state.setups)) {
       app.state.setups.forEach(s => {
-        setupSelect.insertAdjacentHTML("beforeend", `<option value="${s.name}">${s.name}</option>`);
+        const option = document.createElement("option");
+        option.value = s.name;
+        option.textContent = s.name;
+        setupSelect.appendChild(option);
       });
     }
   }
@@ -137,11 +163,20 @@ const analytics = (() => {
     }
 
     try {
-      container.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Applying filters…</p></div>`;
+      container.setAttribute("aria-busy", "true");
+      container.innerHTML = `<div class="loading-state" role="status"><div class="spinner"></div><p>Applying filters…</p></div>`;
       reportData = await api.getAdvancedAnalytics(params);
       renderReports(container, reportData);
     } catch (err) {
-      container.innerHTML = `<div class="empty-state"><p>Error loading analytics data.</p></div>`;
+      console.error("Advanced analytics failed:", err);
+      container.setAttribute("aria-busy", "false");
+      container.innerHTML = `
+        <div class="empty-state analytics-state-message" role="alert">
+          <span class="empty-icon">⚠️</span>
+          <p>Unable to load analytics. Check your connection and try again.</p>
+          <button class="btn btn-secondary" type="button" id="btn-retry-analytics">Try again</button>
+        </div>`;
+      document.getElementById("btn-retry-analytics")?.addEventListener("click", loadReport);
     }
   }
 
@@ -166,29 +201,30 @@ const analytics = (() => {
         </div>
       </div>
     `;
+    container.setAttribute("aria-busy", "false");
   }
 
   function renderKPIs(kpis) {
     return `
-      <div class="kpi-grid">
-        <div class="kpi-card">
+      <div class="kpi-grid analytics-kpi-grid">
+        <div class="kpi-card analytics-kpi-card">
           <div class="kpi-header"><span class="kpi-label">Filtered Trades</span></div>
           <div class="kpi-value">${kpis.total_trades}</div>
           <div class="kpi-subtext">W: ${kpis.wins} | L: ${kpis.losses} | BE: ${kpis.breakeven}</div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card analytics-kpi-card">
           <div class="kpi-header"><span class="kpi-label">Filtered Win Rate</span></div>
           <div class="kpi-value">${kpis.win_rate.toFixed(1)}%</div>
           <div class="kpi-subtext">Profit Factor: ${kpis.profit_factor.toFixed(2)}</div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card analytics-kpi-card">
           <div class="kpi-header"><span class="kpi-label">Filtered P&L</span></div>
           <div class="kpi-value ${app.formatMoney(kpis.total_pnl).includes('-')?'negative':'positive'}">${app.formatMoney(kpis.total_pnl)}</div>
           <div class="kpi-subtext">Avg R: ${app.formatR(kpis.avg_r)}</div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card analytics-kpi-card">
           <div class="kpi-header"><span class="kpi-label">Averages</span></div>
-          <div class="kpi-value" style="font-size:18px;">Win: ${app.formatMoney(kpis.avg_win)}</div>
+          <div class="kpi-value analytics-average-value">Win: ${app.formatMoney(kpis.avg_win)}</div>
           <div class="kpi-subtext">Loss: ${app.formatMoney(kpis.avg_loss)}</div>
         </div>
       </div>
@@ -197,11 +233,11 @@ const analytics = (() => {
 
   function renderSetupAnalysis(setups) {
     if (!setups || setups.length === 0) {
-      return buildPanel("Setup Analysis", "<p class='text-muted' style='padding:16px;'>No setups matched.</p>");
+      return buildPanel("Setup Analysis", "<p class='text-muted analytics-empty-message'>No setups matched these filters.</p>");
     }
     const rows = setups.map(s => `
       <tr>
-        <td><strong>${s.setup}</strong></td>
+        <td><strong>${escapeHtml(s.setup)}</strong></td>
         <td>${s.trades}</td>
         <td>${s.win_rate.toFixed(1)}%</td>
         <td class="${s.pnl >= 0 ? 'positive' : 'negative'}">${app.formatMoney(s.pnl)}</td>
@@ -209,20 +245,20 @@ const analytics = (() => {
       </tr>
     `).join("");
     return buildPanel("Setup Analysis", `
-      <table class="data-table">
+      <div class="analytics-table-wrap"><table class="data-table">
         <thead><tr><th>Setup</th><th>Trades</th><th>Win%</th><th>P&L</th><th>Avg R</th></tr></thead>
         <tbody>${rows}</tbody>
-      </table>
+      </table></div>
     `);
   }
 
   function renderSessionAnalysis(sessions) {
     if (!sessions || sessions.length === 0) {
-      return buildPanel("Session Analysis", "<p class='text-muted' style='padding:16px;'>No sessions matched.</p>");
+      return buildPanel("Session Analysis", "<p class='text-muted analytics-empty-message'>No sessions matched these filters.</p>");
     }
     const rows = sessions.map(s => `
       <tr>
-        <td><strong>${s.session}</strong></td>
+        <td><strong>${escapeHtml(s.session)}</strong></td>
         <td>${s.trades}</td>
         <td>${s.win_rate.toFixed(1)}%</td>
         <td class="${s.pnl >= 0 ? 'positive' : 'negative'}">${app.formatMoney(s.pnl)}</td>
@@ -230,20 +266,20 @@ const analytics = (() => {
       </tr>
     `).join("");
     return buildPanel("Session Analysis", `
-      <table class="data-table">
+      <div class="analytics-table-wrap"><table class="data-table">
         <thead><tr><th>Session</th><th>Trades</th><th>Win%</th><th>P&L</th><th>Avg R</th></tr></thead>
         <tbody>${rows}</tbody>
-      </table>
+      </table></div>
     `);
   }
 
   function renderDirectionAnalysis(directions) {
     if (!directions || directions.length === 0) {
-      return buildPanel("Direction Analysis", "<p class='text-muted' style='padding:16px;'>No directions matched.</p>");
+      return buildPanel("Direction Analysis", "<p class='text-muted analytics-empty-message'>No directions matched these filters.</p>");
     }
     const rows = directions.map(d => `
       <tr>
-        <td><strong>${d.direction}</strong></td>
+        <td><strong>${escapeHtml(d.direction)}</strong></td>
         <td>${d.trades}</td>
         <td>${d.win_rate.toFixed(1)}%</td>
         <td class="${d.pnl >= 0 ? 'positive' : 'negative'}">${app.formatMoney(d.pnl)}</td>
@@ -251,30 +287,30 @@ const analytics = (() => {
       </tr>
     `).join("");
     return buildPanel("Direction Analysis", `
-      <table class="data-table">
+      <div class="analytics-table-wrap"><table class="data-table">
         <thead><tr><th>Direction</th><th>Trades</th><th>Win%</th><th>P&L</th><th>Avg R</th></tr></thead>
         <tbody>${rows}</tbody>
-      </table>
+      </table></div>
     `);
   }
 
   function renderMistakeAnalysis(mistakes) {
     if (!mistakes || mistakes.length === 0) {
-      return buildPanel("Mistake Analysis", "<p class='text-muted' style='padding:16px;'>No mistakes recorded.</p>");
+      return buildPanel("Mistake Analysis", "<p class='text-muted analytics-empty-message'>No mistakes recorded for the selected trades.</p>");
     }
     const rows = mistakes.map(m => `
       <tr>
-        <td><strong>${m.mistake}</strong></td>
+        <td><strong>${escapeHtml(m.mistake)}</strong></td>
         <td>${m.occurrences}</td>
         <td class="${m.total_pnl >= 0 ? 'positive' : 'negative'}">${app.formatMoney(m.total_pnl)}</td>
         <td class="${m.average_pnl >= 0 ? 'positive' : 'negative'}">${app.formatMoney(m.average_pnl)}</td>
       </tr>
     `).join("");
     return buildPanel("Mistake Analysis", `
-      <table class="data-table">
+      <div class="analytics-table-wrap"><table class="data-table">
         <thead><tr><th>Mistake</th><th>Occurrences</th><th>Total P&L</th><th>Avg P&L</th></tr></thead>
         <tbody>${rows}</tbody>
-      </table>
+      </table></div>
     `);
   }
 
@@ -282,7 +318,7 @@ const analytics = (() => {
     return `
       <div class="analytics-panel">
         <div class="panel-header"><h4>${title}</h4></div>
-        <div class="panel-body">${content}</div>
+        <div class="panel-body analytics-panel-body">${content}</div>
       </div>
     `;
   }

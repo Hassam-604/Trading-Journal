@@ -3583,3 +3583,254 @@ a {
     padding: 15px 12px;
   }
 }
+
+/* ── Stage 7: Analytics page refinement ── */
+.analytics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.analytics-heading h1 {
+  color: var(--text-primary);
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.analytics-heading .dashboard-intro-copy {
+  max-width: 700px;
+}
+
+.analytics-workspace {
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.analytics-filters {
+  width: 100%;
+  min-width: 0;
+  padding: 18px;
+  border-radius: var(--radius-xl);
+}
+
+.analytics-filter-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.analytics-filter-heading h2 {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.analytics-filter-heading p {
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.analytics-filter-heading .btn {
+  flex-shrink: 0;
+}
+
+.analytics-filters .filter-form .form-group {
+  margin-bottom: 14px;
+}
+
+.analytics-filters .filter-form label,
+.analytics-filter-label {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.analytics-date-range {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 8px;
+}
+
+.analytics-date-range label {
+  margin: 0 !important;
+  color: var(--text-muted) !important;
+  font-size: 9px !important;
+}
+
+.analytics-filters .form-control {
+  min-width: 0;
+  min-height: 38px;
+  font-size: 12px;
+}
+
+.analytics-apply-btn {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 4px;
+}
+
+.analytics-content {
+  min-width: 0;
+}
+
+.analytics-sections {
+  gap: 16px;
+}
+
+.analytics-kpi-grid {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.analytics-kpi-card {
+  min-width: 0;
+  min-height: 118px;
+  padding: 16px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 72%), var(--bg-surface);
+}
+
+.analytics-kpi-card .kpi-value {
+  font-size: clamp(19px, 2vw, 24px);
+  overflow-wrap: anywhere;
+}
+
+.analytics-kpi-card .analytics-average-value {
+  font-size: 16px;
+}
+
+.analytics-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.analytics-panel {
+  min-width: 0;
+  border-radius: var(--radius-xl);
+}
+
+.analytics-panel .panel-header {
+  padding: 15px 17px;
+  background: transparent;
+}
+
+.analytics-panel .panel-header h4 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.analytics-panel-body {
+  min-width: 0;
+  padding: 0 0 4px;
+}
+
+.analytics-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.analytics-table-wrap .data-table {
+  min-width: 430px;
+}
+
+.analytics-table-wrap .data-table th,
+.analytics-table-wrap .data-table td {
+  padding: 11px 14px;
+  white-space: nowrap;
+}
+
+.analytics-table-wrap .data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.analytics-empty-message {
+  margin: 0;
+  padding: 18px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.analytics-state-message {
+  min-height: 220px;
+  margin: 0;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--bg-surface);
+}
+
+.analytics-state-message .btn {
+  margin-top: 6px;
+}
+
+@media (max-width: 1100px) {
+  .analytics-workspace {
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .analytics-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analytics-filters {
+    position: static;
+  }
+
+  .analytics-filters .filter-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 14px;
+  }
+
+  .analytics-filters .filter-form .form-group {
+    min-width: 0;
+  }
+
+  .analytics-apply-btn {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .analytics-page {
+    gap: 14px;
+  }
+
+  .analytics-workspace {
+    gap: 14px;
+  }
+
+  .analytics-filters {
+    padding: 15px;
+  }
+
+  .analytics-filters .filter-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analytics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analytics-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .analytics-kpi-card {
+    min-height: 110px;
+    padding: 13px;
+  }
+}
