@@ -96,6 +96,10 @@ This login is intended for the app's default local-only Windows launcher (`127.0
 
 If you forget your password, stop the app and run `python -m backend.auth_admin reset-password` from the project folder. The command prompts for a new password without echoing it and preserves all journal records.
 
+### Motion and performance
+
+Navigation uses a brief 180 ms opacity/position transition through the browser's native Web Animations API; loading indicators use CSS. No animation library is required. Transitions and animations are disabled when the operating system's reduced-motion preference is enabled. Motion is limited to opacity and transforms to avoid animating layout; no fixed frame-rate guarantee is made.
+
 ---
 
 ## 📁 Project Structure

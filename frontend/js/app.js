@@ -11,6 +11,7 @@ const app = {
     mistakes: [],
     dashboardKPI: null,
   },
+  pageTransition: null,
 
 
   async init() {
@@ -104,6 +105,29 @@ const app = {
 
     // Load page content
     const contentBody = document.getElementById("content-body");
+    if (this.pageTransition) {
+      this.pageTransition.cancel();
+      this.pageTransition = null;
+    }
+    if (
+      contentBody &&
+      typeof contentBody.animate === "function" &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      this.pageTransition = contentBody.animate(
+        [
+          { opacity: 0.7, transform: "translateY(5px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        {
+          duration: 180,
+          easing: "cubic-bezier(0.2, 0.7, 0.2, 1)",
+        }
+      );
+      this.pageTransition.onfinish = () => {
+        this.pageTransition = null;
+      };
+    }
     contentBody.innerHTML = ""; // clear current
 
     switch (pageId) {
