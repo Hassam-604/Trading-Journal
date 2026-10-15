@@ -22,10 +22,11 @@ const levelTests = {
 
   async render(container) {
     container.innerHTML = `
-      <div id="levels-loading" style="padding: 40px; text-align: center; color: var(--text-muted);">
-        Loading Level Validity Analytics & Tests...
+      <div id="levels-loading" class="research-loading" role="status">
+        <span class="dashboard-spinner" aria-hidden="true"></span>
+        <span>Loading level research…</span>
       </div>
-      <div id="levels-content" style="display: none;"></div>
+      <div id="levels-content" class="research-page levels-page" hidden></div>
     `;
 
     try {
@@ -41,8 +42,8 @@ const levelTests = {
 
       const content = document.getElementById("levels-content");
       const loading = document.getElementById("levels-loading");
-      if (loading) loading.style.display = "none";
-      if (content) content.style.display = "block";
+      if (loading) loading.hidden = true;
+      if (content) content.hidden = false;
 
       this.renderValidityAnalytics(content, stats);
       this.renderRetestsSection(content);
@@ -50,7 +51,7 @@ const levelTests = {
     } catch (err) {
       console.error("Levels render failed:", err);
       container.innerHTML = `
-        <div class="empty-state">
+        <div class="empty-state research-load-error">
           <div class="empty-icon">⚠️</div>
           <div class="empty-title">Failed to load Level Tests data</div>
           <div class="empty-desc">${err.message || 'Please check backend server connection.'}</div>
@@ -81,15 +82,18 @@ const levelTests = {
     }
 
     const html = `
-      <div style="margin-bottom: 24px;">
-        <div style="margin-bottom: 12px;">
-          <h3 style="font-size: 16px; font-weight: 700;">🔁 Level Validity Analytics</h3>
-          <p class="text-secondary" style="font-size: 12px;">Statistical verification of planned key price levels when revisited by market price.</p>
+      <header class="research-heading">
+        <div>
+          <p class="dashboard-eyebrow">RESEARCH</p>
+          <h1>Level tests</h1>
+          <p class="dashboard-intro-copy">Review how planned price levels behave when the market returns to them.</p>
         </div>
+        <button class="btn btn-primary" type="button" onclick="levelTests.openAddModal()">Record a retest</button>
+      </header>
 
         <!-- KPI Cards -->
-        <div class="kpi-grid">
-          <div class="kpi-card">
+        <div class="kpi-grid research-kpi-grid">
+          <div class="kpi-card research-kpi-card">
             <div class="kpi-header">
               <span class="kpi-label">Planned Levels</span>
               <span class="kpi-icon">🎯</span>
@@ -98,7 +102,7 @@ const levelTests = {
             <div class="kpi-subtext">Total zones mapped</div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card research-kpi-card">
             <div class="kpi-header">
               <span class="kpi-label">Levels Tested</span>
               <span class="kpi-icon">📍</span>
@@ -107,7 +111,7 @@ const levelTests = {
             <div class="kpi-subtext">${stats.total_planned > 0 ? ((stats.total_tested / stats.total_planned) * 100).toFixed(1) : 0}% retest rate</div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card research-kpi-card">
             <div class="kpi-header">
               <span class="kpi-label">Respect Rate</span>
               <span class="kpi-icon">🛡️</span>
@@ -116,7 +120,7 @@ const levelTests = {
             <div class="kpi-subtext"><span class="text-win">${stats.levels_respected} Respected</span> | <span class="text-loss">${stats.levels_broken} Broken</span></div>
           </div>
 
-          <div class="kpi-card">
+          <div class="kpi-card research-kpi-card">
             <div class="kpi-header">
               <span class="kpi-label">Avg Retests Before Break</span>
               <span class="kpi-icon">⏳</span>
@@ -127,10 +131,12 @@ const levelTests = {
         </div>
 
         <!-- Retest Performance Breakdown Table -->
-        <div class="table-card" style="padding: 16px 20px; margin-bottom: 24px;">
+        <div class="table-card research-breakdown-card">
           <div class="section-title-bar">
-            <div class="section-title"><span>📊</span> Retest Performance by Visit Count</div>
-            <span class="text-muted" style="font-size: 11px;">Studies whether levels weaken after repeated tests</span>
+            <div>
+              <div class="section-title">Retest performance by visit count</div>
+              <p class="research-card-description">Compare how often levels are respected or broken on each visit.</p>
+            </div>
           </div>
           <div class="table-responsive">
             <table class="data-table">
@@ -149,7 +155,6 @@ const levelTests = {
             </table>
           </div>
         </div>
-      </div>
     `;
 
     container.insertAdjacentHTML("beforeend", html);
@@ -158,63 +163,73 @@ const levelTests = {
   // ── 2. Recorded Retests List Section ──
   renderRetestsSection(container) {
     const html = `
-      <div class="toolbar-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+      <section class="research-records-section">
+        <div class="research-section-heading">
           <div>
-            <div style="font-weight:700; font-size:15px;">📋 Recorded Level Retests</div>
-            <div class="text-secondary" style="font-size:12px;">Individual test records documenting market reaction to previous levels.</div>
+            <h2>Recorded retests</h2>
+            <p class="dashboard-intro-copy">Individual observations of how price reacted to a planned level.</p>
           </div>
-          <button class="btn btn-gold" onclick="levelTests.openAddModal()">+ Record Retest</button>
         </div>
 
-        <div class="toolbar-row">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="lt-search" class="search-input" placeholder="Search notes, price...">
+        <div class="toolbar-card research-toolbar-card">
+          <div class="toolbar-row research-toolbar-row">
+            <label class="research-filter research-filter-search">
+              <span>Search retests</span>
+              <span class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" stroke="currentColor" stroke-width="1.7"/><path d="m15.5 15.5 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <input type="search" id="lt-search" class="search-input" aria-label="Search retest notes and prices" placeholder="Notes or test price…">
+              </span>
+            </label>
+
+            <label class="research-filter">
+              <span>Reaction</span>
+              <select id="lt-reaction" class="filter-select" aria-label="Filter by price reaction">
+                <option value="">All reactions</option>
+                <option value="Strong">Strong</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Weak">Weak</option>
+                <option value="No Reaction">No Reaction</option>
+              </select>
+            </label>
+
+            <label class="research-filter">
+              <span>Outcome</span>
+              <select id="lt-status" class="filter-select" aria-label="Filter by level outcome">
+                <option value="">All outcomes</option>
+                <option value="Respected">Respected</option>
+                <option value="Partially Respected">Partially Respected</option>
+                <option value="Broken">Broken</option>
+              </select>
+            </label>
+
+            <button class="btn btn-secondary research-reset-btn" type="button" onclick="levelTests.resetFilters()">Reset filters</button>
           </div>
-
-          <select id="lt-reaction" class="filter-select">
-            <option value="">All Reactions</option>
-            <option value="Strong">Strong</option>
-            <option value="Moderate">Moderate</option>
-            <option value="Weak">Weak</option>
-            <option value="No Reaction">No Reaction</option>
-          </select>
-
-          <select id="lt-status" class="filter-select">
-            <option value="">All Outcomes</option>
-            <option value="Respected">Respected</option>
-            <option value="Partially Respected">Partially Respected</option>
-            <option value="Broken">Broken</option>
-          </select>
-
-          <button class="btn btn-secondary btn-sm" onclick="levelTests.resetFilters()">Reset</button>
         </div>
-      </div>
 
-      <div class="table-card">
-        <div class="table-responsive">
-          <table class="data-table" id="levels-table">
-            <thead>
-              <tr>
-                <th>Test #</th>
-                <th>Test Date</th>
-                <th>Original Level</th>
-                <th>Direction</th>
-                <th>Test Price</th>
-                <th>Reaction</th>
-                <th>Level Status</th>
-                <th>Notes</th>
-                <th>Screenshots</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="levels-tbody">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
+        <div class="table-card research-table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="levels-table">
+              <thead>
+                <tr>
+                  <th>Test #</th>
+                  <th>Test Date</th>
+                  <th>Original Level</th>
+                  <th>Direction</th>
+                  <th>Test Price</th>
+                  <th>Reaction</th>
+                  <th>Level Status</th>
+                  <th>Notes</th>
+                  <th>Screenshots</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="levels-tbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </section>
     `;
 
     container.insertAdjacentHTML("beforeend", html);
@@ -271,10 +286,9 @@ const levelTests = {
       tbody.innerHTML = `
         <tr>
           <td colspan="10">
-            <div class="empty-state" style="padding: 30px;">
-              <div class="empty-icon">🔁</div>
+            <div class="empty-state research-empty-state">
               <div class="empty-title">No level retests found</div>
-              <div class="empty-desc">When price returns to one of your planned levels, record what happens to build research data.</div>
+              <div class="empty-desc">When price revisits a planned level, record the reaction to build your research history.</div>
             </div>
           </td>
         </tr>
@@ -324,9 +338,15 @@ const levelTests = {
           <td>${ssBadge}</td>
           <td>
             <div class="action-btns">
-              <button class="icon-btn" title="View Details" onclick="levelTests.viewTest(${t.id})">👁️</button>
-              <button class="icon-btn" title="Edit" onclick="levelTests.editTest(${t.id})">✏️</button>
-              <button class="icon-btn danger" title="Delete" onclick="levelTests.deleteTest(${t.id})">🗑️</button>
+              <button class="icon-btn" type="button" aria-label="View retest details" title="View details" onclick="levelTests.viewTest(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+              </button>
+              <button class="icon-btn" type="button" aria-label="Edit retest" title="Edit" onclick="levelTests.editTest(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 7.4a2.1 2.1 0 0 0-3-3L5.2 15.2 4 20Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn danger" type="button" aria-label="Delete retest" title="Delete" onclick="levelTests.deleteTest(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16m-10 4v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
             </div>
           </td>
         </tr>

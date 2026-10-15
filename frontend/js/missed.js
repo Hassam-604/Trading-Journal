@@ -27,78 +27,91 @@ const missedTrades = {
 
   async render(container) {
     container.innerHTML = `
-      <!-- Toolbar & Status Summary Bar -->
-      <div class="toolbar-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+      <div class="research-page missed-page">
+        <header class="research-heading">
           <div>
-            <div style="font-weight:700; font-size:15px;">🎯 Planned & Missed Levels</div>
-            <div class="text-secondary" style="font-size:12px;">Track valid planned levels that were not activated to study if they react later.</div>
+            <p class="dashboard-eyebrow">RESEARCH</p>
+            <h1>Planned levels</h1>
+            <p class="dashboard-intro-copy">Track planned setups that did not activate and study how price reacts when levels are revisited.</p>
           </div>
-          <button class="btn btn-gold" onclick="missedTrades.openAddModal()">+ Plan Trade / Level</button>
+          <button class="btn btn-primary" type="button" onclick="missedTrades.openAddModal()">Plan a level</button>
+        </header>
+
+        <div class="toolbar-card research-toolbar-card">
+          <div class="toolbar-row research-toolbar-row">
+            <label class="research-filter research-filter-search">
+              <span>Search planned levels</span>
+              <span class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" stroke="currentColor" stroke-width="1.7"/><path d="m15.5 15.5 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                <input type="search" id="m-search" class="search-input" aria-label="Search planned levels" placeholder="Setup, reason, notes…">
+              </span>
+            </label>
+
+            <label class="research-filter">
+              <span>Status</span>
+              <select id="m-status" class="filter-select" aria-label="Filter by planned level status">
+                <option value="">All statuses</option>
+                <option value="Waiting">Waiting</option>
+                <option value="Not Activated">Not Activated</option>
+                <option value="Later Tested">Later Tested</option>
+                <option value="Invalidated">Invalidated</option>
+              </select>
+            </label>
+
+            <label class="research-filter">
+              <span>Session</span>
+              <select id="m-session" class="filter-select" aria-label="Filter by trading session">
+                <option value="">All sessions</option>
+                <option value="Asia">Asia</option>
+                <option value="London">London</option>
+                <option value="New York">New York</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+
+            <label class="research-filter">
+              <span>Direction</span>
+              <select id="m-direction" class="filter-select" aria-label="Filter by direction">
+                <option value="">All directions</option>
+                <option value="Buy">Buy</option>
+                <option value="Sell">Sell</option>
+              </select>
+            </label>
+
+            <button class="btn btn-secondary research-reset-btn" type="button" onclick="missedTrades.resetFilters()">Reset filters</button>
+          </div>
         </div>
 
-        <div class="toolbar-row">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="m-search" class="search-input" placeholder="Search setup, reason, notes...">
+        <div class="table-card research-table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="missed-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort="planned_date">Planned Date</th>
+                  <th>Pair / Session</th>
+                  <th>Direction</th>
+                  <th class="sortable" data-sort="planned_entry">Level / Entry</th>
+                  <th>Target / Inval.</th>
+                  <th>Expected RR</th>
+                  <th>Setup</th>
+                  <th>Reason Not Activated</th>
+                  <th>Status</th>
+                  <th>Retests</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="missed-tbody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
           </div>
 
-          <select id="m-status" class="filter-select">
-            <option value="">All Statuses</option>
-            <option value="Waiting">Waiting</option>
-            <option value="Not Activated">Not Activated</option>
-            <option value="Later Tested">Later Tested</option>
-            <option value="Invalidated">Invalidated</option>
-          </select>
-
-          <select id="m-session" class="filter-select">
-            <option value="">All Sessions</option>
-            <option value="Asia">Asia</option>
-            <option value="London">London</option>
-            <option value="New York">New York</option>
-            <option value="Other">Other</option>
-          </select>
-
-          <select id="m-direction" class="filter-select">
-            <option value="">All Directions</option>
-            <option value="Buy">Buy</option>
-            <option value="Sell">Sell</option>
-          </select>
-
-          <button class="btn btn-secondary btn-sm" onclick="missedTrades.resetFilters()">Reset</button>
-        </div>
-      </div>
-
-      <!-- Planned Trades Table -->
-      <div class="table-card">
-        <div class="table-responsive">
-          <table class="data-table" id="missed-table">
-            <thead>
-              <tr>
-                <th class="sortable" data-sort="planned_date">Planned Date</th>
-                <th>Pair / Session</th>
-                <th>Direction</th>
-                <th class="sortable" data-sort="planned_entry">Level / Entry</th>
-                <th>Target / Inval.</th>
-                <th>Expected RR</th>
-                <th>Setup</th>
-                <th>Reason Not Activated</th>
-                <th>Status</th>
-                <th>Retests</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="missed-tbody">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-
-        <div class="pagination-bar">
-          <div class="page-info" id="m-page-info">Showing 0 of 0 planned trades</div>
-          <div class="page-controls">
-            <button class="btn btn-secondary btn-sm" id="m-btn-prev" onclick="missedTrades.prevPage()">Previous</button>
-            <button class="btn btn-secondary btn-sm" id="m-btn-next" onclick="missedTrades.nextPage()">Next</button>
+          <div class="pagination-bar">
+            <div class="page-info" id="m-page-info">Showing 0 of 0 planned trades</div>
+            <div class="page-controls">
+              <button class="btn btn-secondary btn-sm" id="m-btn-prev" onclick="missedTrades.prevPage()">Previous</button>
+              <button class="btn btn-secondary btn-sm" id="m-btn-next" onclick="missedTrades.nextPage()">Next</button>
+            </div>
           </div>
         </div>
       </div>
@@ -200,10 +213,11 @@ const missedTrades = {
       tbody.innerHTML = `
         <tr>
           <td colspan="11">
-            <div class="empty-state" style="padding: 30px;">
+            <div class="empty-state research-empty-state">
               <div class="empty-icon">🎯</div>
-              <div class="empty-title">No planned trades found</div>
-              <div class="empty-desc">Click "+ Plan Trade / Level" above to record a planned setup or level.</div>
+              <div class="empty-title">No planned levels found</div>
+              <div class="empty-desc">Adjust your filters or plan a level to start building your research history.</div>
+              <button class="btn btn-secondary" type="button" onclick="missedTrades.resetFilters()">Clear filters</button>
             </div>
           </td>
         </tr>
@@ -256,9 +270,15 @@ const missedTrades = {
           <td>${testsBadge}</td>
           <td>
             <div class="action-btns">
-              <button class="icon-btn" title="View Details" onclick="missedTrades.viewTrade(${t.id})">👁️</button>
-              <button class="icon-btn" title="Edit" onclick="missedTrades.editTrade(${t.id})">✏️</button>
-              <button class="icon-btn danger" title="Delete" onclick="missedTrades.deleteTrade(${t.id})">🗑️</button>
+              <button class="icon-btn" type="button" aria-label="View planned level details" title="View details" onclick="missedTrades.viewTrade(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+              </button>
+              <button class="icon-btn" type="button" aria-label="Edit planned level" title="Edit" onclick="missedTrades.editTrade(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 7.4a2.1 2.1 0 0 0-3-3L5.2 15.2 4 20Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn danger" type="button" aria-label="Delete planned level" title="Delete" onclick="missedTrades.deleteTrade(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16m-10 4v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
             </div>
           </td>
         </tr>
