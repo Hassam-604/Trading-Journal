@@ -31,6 +31,7 @@ def list_trades(
     rule_followed: Optional[str] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    search: Optional[str] = None,
     sort_by: str = "date",
     sort_dir: str = "desc",
     db: Session = Depends(get_db),
@@ -41,6 +42,7 @@ def list_trades(
         direction=direction, setup=setup,
         result=result, rule_followed=rule_followed,
         date_from=date_from, date_to=date_to,
+        search=search,
         sort_by=sort_by, sort_dir=sort_dir,
     )
 
@@ -55,6 +57,7 @@ def trade_count(
     rule_followed: Optional[str] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    search: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     return {"count": crud.count_trades(
@@ -62,6 +65,7 @@ def trade_count(
         direction=direction, setup=setup,
         result=result, rule_followed=rule_followed,
         date_from=date_from, date_to=date_to,
+        search=search,
     )}
 
 

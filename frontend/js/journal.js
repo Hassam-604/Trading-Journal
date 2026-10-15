@@ -15,48 +15,84 @@ const journal = {
       pair: "",
       session: "",
       direction: "",
-      result: ""
+      result: "",
+      date_from: "",
+      date_to: "",
+      search: ""
     },
-    currentTrade: null // Used for details view
+    currentTrade: null,
+    loadRequestId: 0,
+    filterTimer: null
   },
 
   async render(container) {
     container.innerHTML = `
+      <div class="journal-content">
+      <header class="journal-heading">
+        <div>
+          <p class="dashboard-eyebrow">TRADE HISTORY</p>
+          <h1>Trade journal</h1>
+          <p class="dashboard-intro-copy">Search, review, and refine your recorded trades.</p>
+        </div>
+        <button class="btn btn-primary" type="button" onclick="app.openAddTradeModal()">Add Trade</button>
+      </header>
       <div class="toolbar-card">
-        <div class="toolbar-row">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="j-search" class="search-input" placeholder="Search setup, notes...">
-          </div>
-          <input type="date" id="j-date-from" class="date-input" title="From Date">
-          <input type="date" id="j-date-to" class="date-input" title="To Date">
-          
-          <select id="j-session" class="filter-select">
+        <div class="toolbar-row journal-toolbar-row">
+          <label class="journal-filter journal-filter-search">
+            <span>Search trades</span>
+            <span class="search-box">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" stroke="currentColor" stroke-width="1.7"/><path d="m15.5 15.5 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <input type="search" id="j-search" class="search-input" aria-label="Search trades by pair, setup, mistake, lesson, or notes" placeholder="Pair, setup, mistake, lesson, notes…">
+            </span>
+          </label>
+          <label class="journal-filter">
+            <span>Pair</span>
+            <input type="text" id="j-pair" class="date-input" placeholder="All pairs" aria-label="Filter by exact pair">
+          </label>
+          <label class="journal-filter">
+            <span>From</span>
+            <input type="date" id="j-date-from" class="date-input" aria-label="Filter from date">
+          </label>
+          <label class="journal-filter">
+            <span>To</span>
+            <input type="date" id="j-date-to" class="date-input" aria-label="Filter to date">
+          </label>
+
+          <label class="journal-filter">
+            <span>Session</span>
+            <select id="j-session" class="filter-select">
             <option value="">All Sessions</option>
             <option value="Asia">Asia</option>
             <option value="London">London</option>
             <option value="New York">New York</option>
             <option value="Other">Other</option>
-          </select>
+            </select>
+          </label>
 
-          <select id="j-direction" class="filter-select">
+          <label class="journal-filter">
+            <span>Direction</span>
+            <select id="j-direction" class="filter-select">
             <option value="">All Directions</option>
             <option value="Buy">Buy</option>
             <option value="Sell">Sell</option>
-          </select>
+            </select>
+          </label>
           
-          <select id="j-result" class="filter-select">
+          <label class="journal-filter">
+            <span>Result</span>
+            <select id="j-result" class="filter-select">
             <option value="">All Results</option>
             <option value="Win">Win</option>
             <option value="Loss">Loss</option>
             <option value="BE">BE</option>
-          </select>
+            </select>
+          </label>
           
-          <button class="btn btn-secondary btn-sm" onclick="journal.resetFilters()">Reset</button>
+          <button class="btn btn-secondary journal-reset-btn" type="button" onclick="journal.resetFilters()">Reset filters</button>
         </div>
       </div>
 
-      <div class="table-card">
+      <div class="table-card journal-table-card">
         <div class="table-responsive">
           <table class="data-table" id="journal-table">
             <thead>
@@ -84,6 +120,7 @@ const journal = {
           </div>
         </div>
       </div>
+      </div>
     `;
 
     this.attachFilterListeners();
@@ -92,8 +129,43 @@ const journal = {
 
   attachFilterListeners() {
     const ids = ["j-session", "j-direction", "j-result"];
+    const filterValues = {
+      "j-search": "search",
+      "j-pair": "pair",
+      "j-date-from": "date_from",
+      "j-date-to": "date_to",
+      "j-session": "session",
+      "j-direction": "direction",
+      "j-result": "result"
+    };
+
+    Object.entries(filterValues).forEach(([id, key]) => {
+      const input = document.getElementById(id);
+      if (input) input.value = this.state.filters[key] || "";
+    });
+
+    ["j-search", "j-pair"].forEach(id => {
+      document.getElementById(id)?.addEventListener("input", (e) => {
+        const key = filterValues[id];
+        this.state.filters[key] = e.target.value;
+        this.state.filters.skip = 0;
+        clearTimeout(this.state.filterTimer);
+        this.state.filterTimer = setTimeout(() => this.loadTrades(), 250);
+      });
+    });
+
+    ["j-date-from", "j-date-to"].forEach(id => {
+      document.getElementById(id)?.addEventListener("change", (e) => {
+        clearTimeout(this.state.filterTimer);
+        this.state.filters[filterValues[id]] = e.target.value;
+        this.state.filters.skip = 0;
+        this.loadTrades();
+      });
+    });
+
     ids.forEach(id => {
       document.getElementById(id)?.addEventListener("change", (e) => {
+        clearTimeout(this.state.filterTimer);
         const key = id.replace("j-", "");
         this.state.filters[key] = e.target.value;
         this.state.filters.skip = 0; // Reset pagination
@@ -105,6 +177,7 @@ const journal = {
     document.querySelectorAll(".data-table th.sortable").forEach(th => {
       th.addEventListener("click", () => {
         const sortCol = th.getAttribute("data-sort");
+        clearTimeout(this.state.filterTimer);
         if (this.state.filters.sort_by === sortCol) {
           this.state.filters.sort_dir = this.state.filters.sort_dir === "desc" ? "asc" : "desc";
         } else {
@@ -117,6 +190,7 @@ const journal = {
   },
 
   resetFilters() {
+    clearTimeout(this.state.filterTimer);
     this.state.filters = {
       skip: 0,
       limit: 50,
@@ -125,39 +199,63 @@ const journal = {
       pair: "",
       session: "",
       direction: "",
-      result: ""
+      result: "",
+      date_from: "",
+      date_to: "",
+      search: ""
     };
-    document.getElementById("j-session").value = "";
-    document.getElementById("j-direction").value = "";
-    document.getElementById("j-result").value = "";
+    ["j-search", "j-pair", "j-date-from", "j-date-to", "j-session", "j-direction", "j-result"].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.value = "";
+    });
     this.loadTrades();
   },
 
   async loadTrades() {
+    const requestId = ++this.state.loadRequestId;
     try {
       const tbody = document.getElementById("journal-tbody");
-      if(tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px;">Loading trades...</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8"><div class="journal-table-state" role="status"><span class="dashboard-spinner" aria-hidden="true"></span><span>Loading trades…</span></div></td></tr>`;
       
       const params = {
         skip: this.state.filters.skip,
         limit: this.state.filters.limit,
         sort_by: this.state.filters.sort_by,
         sort_dir: this.state.filters.sort_dir,
+        pair: this.state.filters.pair.trim(),
         session_filter: this.state.filters.session,
         direction: this.state.filters.direction,
-        result: this.state.filters.result
+        result: this.state.filters.result,
+        date_from: this.state.filters.date_from,
+        date_to: this.state.filters.date_to,
+        search: this.state.filters.search.trim()
       };
 
-      this.state.trades = await api.getTrades(params);
-      const countData = await api.getTradeCount(params);
+      const countParams = {
+        pair: params.pair,
+        session_filter: params.session_filter,
+        direction: params.direction,
+        result: params.result,
+        date_from: params.date_from,
+        date_to: params.date_to,
+        search: params.search
+      };
+      const [trades, countData] = await Promise.all([
+        api.getTrades(params),
+        api.getTradeCount(countParams)
+      ]);
+      if (requestId !== this.state.loadRequestId) return;
+
+      this.state.trades = trades;
       this.state.totalCount = countData.count;
       
       this.renderTableBody();
       this.updatePagination();
     } catch (e) {
       console.error(e);
+      if (requestId !== this.state.loadRequestId) return;
       const tbody = document.getElementById("journal-tbody");
-      if(tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color: var(--color-loss);">Failed to load trades.</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8"><div class="journal-table-state journal-table-error" role="alert">Failed to load trades. Check your connection and try again.</div></td></tr>`;
     }
   },
 
@@ -169,9 +267,10 @@ const journal = {
       tbody.innerHTML = `
         <tr>
           <td colspan="8">
-            <div class="empty-state" style="padding: 30px 10px;">
+            <div class="empty-state journal-empty-state">
               <div class="empty-title">No trades found</div>
-              <div class="empty-desc">Try adjusting your filters or add a new trade.</div>
+              <div class="empty-desc">Try broadening your filters, or add a trade to start building your journal.</div>
+              <button class="btn btn-secondary" type="button" onclick="journal.resetFilters()">Clear filters</button>
             </div>
           </td>
         </tr>
@@ -195,29 +294,35 @@ const journal = {
       html += `
         <tr>
           <td>
-            <div style="font-weight: 600;">${t.date}</div>
-            <div class="text-secondary" style="font-size: 11px;">${t.time}</div>
+            <div class="dashboard-table-primary">${t.date}</div>
+            <div class="dashboard-trade-time">${t.time}</div>
           </td>
           <td>
-            <div style="font-weight: 600;">${t.pair}</div>
-            <div class="text-secondary" style="font-size: 11px;">${t.session}</div>
+            <div class="dashboard-table-primary">${t.pair}</div>
+            <div class="dashboard-trade-session">${t.session}</div>
           </td>
           <td><span class="badge ${dirClass}">${t.direction}</span></td>
           <td>
             <div>Risk: $${t.risk.toFixed(2)}</div>
-            <div class="text-secondary" style="font-size: 11px;">RR: ${t.rr.toFixed(2)}</div>
+            <div class="dashboard-trade-time">RR: ${t.rr.toFixed(2)}</div>
           </td>
           <td style="max-width: 150px; white-space: normal;">${setupHtml}</td>
           <td><span class="badge ${resClass}">${t.result}</span></td>
-          <td class="${pnlClass}" style="font-weight: 700;">
+          <td class="${pnlClass} dashboard-table-pnl">
             <div>${pnlText}</div>
-            <div style="font-size: 11px;">${app.formatR(t.r_multiple)}</div>
+            <div class="dashboard-trade-r">${app.formatR(t.r_multiple)}</div>
           </td>
           <td>
             <div class="action-btns">
-              <button class="icon-btn" title="View Details" onclick="journal.viewTrade(${t.id})">👁️</button>
-              <button class="icon-btn" title="Edit" onclick="journal.editTrade(${t.id})">✏️</button>
-              <button class="icon-btn danger" title="Delete" onclick="journal.deleteTrade(${t.id})">🗑️</button>
+              <button class="icon-btn" type="button" aria-label="View trade details" title="View details" onclick="journal.viewTrade(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+              </button>
+              <button class="icon-btn" type="button" aria-label="Edit trade" title="Edit" onclick="journal.editTrade(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.8L19 7.4a2.1 2.1 0 0 0-3-3L5.2 15.2 4 20Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="icon-btn danger" type="button" aria-label="Delete trade" title="Delete" onclick="journal.deleteTrade(${t.id})">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16m-10 4v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
             </div>
           </td>
         </tr>
@@ -248,12 +353,14 @@ const journal = {
 
   prevPage() {
     if (this.state.filters.skip >= this.state.filters.limit) {
+      clearTimeout(this.state.filterTimer);
       this.state.filters.skip -= this.state.filters.limit;
       this.loadTrades();
     }
   },
 
   nextPage() {
+    clearTimeout(this.state.filterTimer);
     this.state.filters.skip += this.state.filters.limit;
     this.loadTrades();
   },

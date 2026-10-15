@@ -154,6 +154,21 @@ def get_trade(db: Session, trade_id: int) -> Optional[models.Trade]:
     )
 
 
+def _apply_trade_search(query, search: Optional[str]):
+    if not search or not search.strip():
+        return query
+
+    term = search.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    pattern = f"%{term}%"
+    return query.filter(or_(
+        models.Trade.pair.ilike(pattern, escape="\\"),
+        models.Trade.setup.ilike(pattern, escape="\\"),
+        models.Trade.mistake.ilike(pattern, escape="\\"),
+        models.Trade.lesson.ilike(pattern, escape="\\"),
+        models.Trade.notes.ilike(pattern, escape="\\"),
+    ))
+
+
 def get_trades(
     db: Session,
     skip: int = 0,
@@ -166,6 +181,7 @@ def get_trades(
     rule_followed: Optional[str] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    search: Optional[str] = None,
     sort_by: str = "date",
     sort_dir: str = "desc",
 ) -> List[models.Trade]:
@@ -187,6 +203,7 @@ def get_trades(
         q = q.filter(models.Trade.date >= date_from)
     if date_to:
         q = q.filter(models.Trade.date <= date_to)
+    q = _apply_trade_search(q, search)
 
     # Sorting
     sort_col = getattr(models.Trade, sort_by, models.Trade.date)
@@ -208,6 +225,7 @@ def count_trades(
     rule_followed: Optional[str] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
+    search: Optional[str] = None,
 ) -> int:
     q = db.query(func.count(models.Trade.id))
     if pair:
@@ -226,6 +244,7 @@ def count_trades(
         q = q.filter(models.Trade.date >= date_from)
     if date_to:
         q = q.filter(models.Trade.date <= date_to)
+    q = _apply_trade_search(q, search)
     return q.scalar() or 0
 
 
@@ -1279,4 +1298,3 @@ def get_advanced_analytics(
         directions=directions,
         mistakes=mistakes
     )
-

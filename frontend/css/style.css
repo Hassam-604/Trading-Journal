@@ -2882,3 +2882,314 @@ a {
     padding: 15px 12px;
   }
 }
+
+/* ── Journal and trade-entry refinement ── */
+.journal-page,
+.journal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.journal-content .toolbar-card {
+  margin-bottom: 0;
+}
+
+.journal-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.journal-heading h1 {
+  font-size: clamp(23px, 2.2vw, 29px);
+  line-height: 1.2;
+}
+
+.journal-toolbar-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.journal-filter {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.journal-filter-search {
+  grid-column: span 2;
+}
+
+.journal-filter .search-box {
+  width: 100%;
+  min-width: 0;
+}
+
+.journal-filter .search-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.journal-filter .search-input,
+.journal-filter .filter-select,
+.journal-filter .date-input {
+  width: 100%;
+  min-height: 38px;
+  font-size: 12px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.journal-filter .date-input {
+  color-scheme: dark;
+}
+
+.journal-reset-btn {
+  min-height: 38px;
+  align-self: end;
+}
+
+.journal-table-card .data-table {
+  min-width: 940px;
+}
+
+.journal-table-card .data-table th,
+.journal-table-card .data-table td {
+  padding: 12px 14px;
+}
+
+.journal-table-card .data-table th.sortable {
+  transition: color 140ms ease;
+}
+
+.journal-table-card .action-btns {
+  gap: 6px;
+}
+
+.journal-table-card .icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.journal-table-state {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-secondary);
+}
+
+.journal-table-error {
+  color: var(--color-loss);
+}
+
+.journal-empty-state {
+  padding: 34px 12px;
+}
+
+.journal-empty-state .btn {
+  margin-top: 4px;
+}
+
+#trade-modal-body {
+  padding: 22px;
+}
+
+#trade-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#trade-form .form-group > label,
+#trade-form .form-label {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+#trade-form .form-label .text-muted {
+  margin-left: 5px;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+#trade-form .form-input {
+  min-height: 40px;
+}
+
+#trade-form .form-section-header {
+  margin-top: 3px;
+  padding-bottom: 8px;
+  border-bottom-color: var(--border-default);
+  color: var(--gold-accent);
+}
+
+#trade-form .form-grid-6 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#trade-form .form-group > label {
+  display: block;
+}
+
+#trade-form .tag-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#trade-form .tag-pill {
+  min-height: 32px;
+  padding: 6px 11px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+#trade-form .tag-pill:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+}
+
+#trade-form .tag-pill.active {
+  border-color: rgba(216, 182, 107, 0.55);
+  background: var(--gold-glow);
+  color: var(--gold-accent);
+}
+
+#trade-form .tag-pill.danger.active {
+  border-color: var(--color-loss-border);
+  background: var(--color-loss-bg);
+  color: var(--color-loss);
+}
+
+#trade-form .calc-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+#trade-form .screenshot-grid {
+  margin-top: 12px !important;
+}
+
+#trade-form .screenshot-thumb-box {
+  border-radius: var(--radius-lg);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+#trade-form .pending-screenshot {
+  border: 1px dashed var(--gold-accent);
+}
+
+#trade-form .screenshot-actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+}
+
+#trade-form .screenshot-category-select {
+  min-width: 0;
+  max-width: calc(100% - 36px);
+  padding: 4px 7px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 10px;
+}
+
+#trade-form .screenshot-remove-button {
+  width: 25px;
+  height: 25px;
+  padding: 2px;
+}
+
+@media (max-width: 900px) {
+  .journal-toolbar-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #trade-form .form-grid-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #trade-form .form-grid-2,
+  #trade-form .form-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .journal-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .journal-toolbar-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .journal-filter-search {
+    grid-column: auto;
+  }
+
+  .journal-reset-btn {
+    width: 100%;
+  }
+
+  #trade-modal-body {
+    padding: 16px;
+  }
+
+  #trade-form .form-grid-2,
+  #trade-form .form-grid-3 {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #trade-form .form-grid-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #trade-form .calc-preview {
+    flex-direction: column;
+  }
+}

@@ -23,34 +23,36 @@ const formManager = {
     const dateVal = isEdit ? tradeData.date : localISOTime.split("T")[0];
     const timeVal = isEdit ? tradeData.time : localISOTime.split("T")[1];
 
-    const setupsHtml = app.state.setups.map(s => 
-      `<span class="tag-pill ${isEdit && tradeData.setup && tradeData.setup.includes(s.name) ? 'active' : ''}" data-type="setup">${s.name}</span>`
-    ).join("");
+    const setupsHtml = app.state.setups.map(s => {
+      const selected = isEdit && tradeData.setup && tradeData.setup.includes(s.name);
+      return `<button type="button" class="tag-pill ${selected ? 'active' : ''}" data-type="setup" aria-pressed="${!!selected}">${s.name}</button>`;
+    }).join("");
 
-    const mistakesHtml = app.state.mistakes.map(m => 
-      `<span class="tag-pill danger ${isEdit && tradeData.mistake && tradeData.mistake.includes(m.name) ? 'active' : ''}" data-type="mistake">${m.name}</span>`
-    ).join("");
+    const mistakesHtml = app.state.mistakes.map(m => {
+      const selected = isEdit && tradeData.mistake && tradeData.mistake.includes(m.name);
+      return `<button type="button" class="tag-pill danger ${selected ? 'active' : ''}" data-type="mistake" aria-pressed="${!!selected}">${m.name}</button>`;
+    }).join("");
 
     body.innerHTML = `
       <form id="trade-form">
         <div class="form-grid-2">
           <div class="form-group">
-            <label>Date *</label>
+            <label for="f-date">Date *</label>
             <input type="date" class="form-input" id="f-date" value="${dateVal}" required>
           </div>
           <div class="form-group">
-            <label>Time *</label>
+            <label for="f-time">Time *</label>
             <input type="time" class="form-input" id="f-time" value="${timeVal}" required>
           </div>
         </div>
 
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Pair</label>
+            <label for="f-pair">Pair *</label>
             <input type="text" class="form-input" id="f-pair" value="${isEdit ? tradeData.pair : 'XAUUSD'}" required>
           </div>
           <div class="form-group">
-            <label>Session *</label>
+            <label for="f-session">Session *</label>
             <select class="form-input" id="f-session" required>
               <option value="Asia" ${isEdit && tradeData.session==='Asia'?'selected':''}>Asia</option>
               <option value="London" ${isEdit && tradeData.session==='London'?'selected':''}>London</option>
@@ -59,7 +61,7 @@ const formManager = {
             </select>
           </div>
           <div class="form-group">
-            <label>Direction *</label>
+            <label for="f-direction">Direction *</label>
             <select class="form-input" id="f-direction" required>
               <option value="Buy" ${isEdit && tradeData.direction==='Buy'?'selected':''}>Buy</option>
               <option value="Sell" ${isEdit && tradeData.direction==='Sell'?'selected':''}>Sell</option>
@@ -70,30 +72,30 @@ const formManager = {
         <div class="form-section-header">Execution</div>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Entry Price *</label>
+            <label for="f-entry">Entry Price *</label>
             <input type="number" step="0.001" class="form-input" id="f-entry" value="${isEdit ? tradeData.entry_price : ''}" required>
           </div>
           <div class="form-group">
-            <label>Stop Loss *</label>
+            <label for="f-sl">Stop Loss *</label>
             <input type="number" step="0.001" class="form-input" id="f-sl" value="${isEdit ? tradeData.stop_loss : ''}" required>
           </div>
           <div class="form-group">
-            <label>Take Profit *</label>
+            <label for="f-tp">Take Profit *</label>
             <input type="number" step="0.001" class="form-input" id="f-tp" value="${isEdit ? tradeData.take_profit : ''}" required>
           </div>
         </div>
         
         <div class="calc-preview">
-          Calculated Risk: <span id="f-calc-risk" class="text-gold">0.00</span> points | Target RR: <span id="f-calc-rr" class="text-gold">0.00</span>
+          Target RR: <span id="f-calc-rr" class="text-gold">0.00</span>
         </div>
 
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Risk Amount ($) *</label>
-            <input type="number" step="0.01" class="form-input" id="f-risk" value="${isEdit ? tradeData.risk : app.state.settings.default_risk}" required>
+            <label for="f-risk">Risk Amount ($) *</label>
+            <input type="number" step="0.01" min="0.01" class="form-input" id="f-risk" value="${isEdit ? tradeData.risk : ''}" placeholder="Enter risk amount" required>
           </div>
           <div class="form-group">
-            <label>Result *</label>
+            <label for="f-result">Result *</label>
             <select class="form-input" id="f-result" required>
               <option value="Win" ${isEdit && tradeData.result==='Win'?'selected':''}>Win</option>
               <option value="Loss" ${isEdit && tradeData.result==='Loss'?'selected':''}>Loss</option>
@@ -101,20 +103,20 @@ const formManager = {
             </select>
           </div>
           <div class="form-group">
-            <label>P&L ($)</label>
+            <label for="f-pnl">P&amp;L ($)</label>
             <input type="number" step="0.01" class="form-input" id="f-pnl" value="${isEdit ? tradeData.pnl : ''}" placeholder="Leave empty for auto">
           </div>
         </div>
 
         <div class="form-section-header">Setup & Mistakes</div>
         <div class="form-group">
-          <label>Setup (Select multiple)</label>
+          <div class="form-label">Setup <span class="text-muted">Select any that apply</span></div>
           <div class="tag-picker" id="f-setup-picker">
             ${setupsHtml}
           </div>
         </div>
         <div class="form-group">
-          <label>Mistakes (Select multiple)</label>
+          <div class="form-label">Mistakes <span class="text-muted">Select any that apply</span></div>
           <div class="tag-picker" id="f-mistake-picker">
             ${mistakesHtml}
           </div>
@@ -127,7 +129,7 @@ const formManager = {
             const val = isEdit ? tradeData[field] : '';
             return `
               <div class="form-group">
-                <label>${tf}</label>
+                <label for="f-${field}">${tf}</label>
                 <select class="form-input" id="f-${field}">
                   <option value="" ${!val?'selected':''}>-</option>
                   <option value="Bullish" ${val==='Bullish'?'selected':''}>Bull</option>
@@ -141,18 +143,18 @@ const formManager = {
 
         <div class="form-section-header">Review</div>
         <div class="form-group">
-          <label>Lesson Learned</label>
+          <label for="f-lesson">Lesson Learned</label>
           <input type="text" class="form-input" id="f-lesson" value="${isEdit && tradeData.lesson ? tradeData.lesson : ''}">
         </div>
         <div class="form-group">
-          <label>Notes</label>
+          <label for="f-notes">Notes</label>
           <textarea class="form-input" id="f-notes" rows="3">${isEdit && tradeData.notes ? tradeData.notes : ''}</textarea>
         </div>
 
         <div class="form-section-header">Screenshots</div>
         <div class="form-group">
-          <input type="file" id="f-screenshot-input" accept="image/*" multiple style="display:none;">
-          <button type="button" class="btn btn-secondary" onclick="document.getElementById('f-screenshot-input').click()">+ Add Screenshot</button>
+          <input type="file" id="f-screenshot-input" accept="image/*" multiple hidden aria-label="Choose trade screenshots">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('f-screenshot-input').click()">Add screenshots</button>
           <div id="f-screenshot-preview" class="screenshot-grid" style="margin-top: 10px;">
             <!-- Previews render here -->
           </div>
@@ -162,13 +164,16 @@ const formManager = {
 
     this.attachListeners();
     this.renderScreenshotPreviews();
+    const saveButton = document.getElementById("trade-modal-save");
+    if (saveButton) saveButton.textContent = isEdit ? "Save Changes" : "Save Trade";
   },
 
   attachListeners() {
     // Tag pickers
-    document.querySelectorAll(".tag-pill").forEach(pill => {
+    document.querySelectorAll("#trade-form .tag-pill").forEach(pill => {
       pill.addEventListener("click", () => {
         pill.classList.toggle("active");
+        pill.setAttribute("aria-pressed", String(pill.classList.contains("active")));
       });
     });
 
@@ -189,7 +194,6 @@ const formManager = {
 
       if (!isNaN(e) && !isNaN(sl)) {
         riskPts = dir === "Buy" ? e - sl : sl - e;
-        document.getElementById("f-calc-risk").textContent = riskPts.toFixed(2);
       }
       
       if (!isNaN(e) && !isNaN(sl) && !isNaN(tp) && riskPts > 0) {
@@ -229,10 +233,10 @@ const formManager = {
     this.existingScreenshots.forEach((ss, idx) => {
       html += `
         <div class="screenshot-thumb-box">
-          <img src="/api/screenshots/file/${ss.filename}">
+          <img src="/api/screenshots/file/${ss.filename}" alt="${ss.category} trade screenshot">
           <div class="screenshot-actions">
             <span>${ss.category}</span>
-            <button type="button" class="icon-btn danger" onclick="formManager.removeExistingScreenshot(${idx})" style="padding:2px;">✕</button>
+            <button type="button" class="icon-btn danger screenshot-remove-button" aria-label="Remove ${ss.category} screenshot" onclick="formManager.removeExistingScreenshot(${idx})">✕</button>
           </div>
         </div>
       `;
@@ -241,9 +245,10 @@ const formManager = {
     // Pending
     this.pendingScreenshots.forEach((ps, idx) => {
       html += `
-        <div class="screenshot-thumb-box" style="border: 2px dashed var(--color-gold);">
-          <img src="${ps.url}">
-            <select onchange="formManager.updatePendingCategory(${idx}, this.value)" style="font-size:10px; padding:2px; background:var(--bg-surface); color:var(--text-main); border:1px solid var(--border-subtle); border-radius:3px;">
+        <div class="screenshot-thumb-box pending-screenshot">
+          <img src="${ps.url}" alt="New trade screenshot preview">
+          <div class="screenshot-actions">
+            <select class="screenshot-category-select" aria-label="Screenshot category" onchange="formManager.updatePendingCategory(${idx}, this.value)">
               <option value="HTF" ${ps.category==='HTF'?'selected':''}>HTF</option>
               <option value="15M" ${ps.category==='15M'?'selected':''}>15M</option>
               <option value="5M" ${ps.category==='5M'?'selected':''}>5M</option>
@@ -252,7 +257,7 @@ const formManager = {
               <option value="After entry" ${ps.category==='After entry'?'selected':''}>After entry</option>
               <option value="Result" ${ps.category==='Result'?'selected':''}>Result</option>
             </select>
-            <button type="button" class="icon-btn danger" onclick="formManager.removePendingScreenshot(${idx})" style="padding:2px;">✕</button>
+            <button type="button" class="icon-btn danger screenshot-remove-button" aria-label="Remove new screenshot" onclick="formManager.removePendingScreenshot(${idx})">✕</button>
           </div>
         </div>
       `;
@@ -354,7 +359,7 @@ const formManager = {
       // api.js handles toast
     } finally {
       btn.disabled = false;
-      btn.textContent = "Save Trade";
+      btn.textContent = this.editingId ? "Save Changes" : "Save Trade";
     }
   }
 };
